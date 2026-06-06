@@ -17,15 +17,15 @@ export default function SessionViewPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/workouts/${workoutId}`).then(r => r.json()),
-      fetch(`/api/sessions/${sessionId}/last-execution`).then(r => r.json()),
+      fetch(`/api/workouts/${workoutId}`).then(r => r.ok ? r.json() : null),
+      fetch(`/api/sessions/${sessionId}/last-execution`).then(r => r.ok ? r.json() : null),
     ]).then(([w, le]) => {
       setWorkout(w)
-      const sess = (w.sessions || []).find((s: any) => s.id === sessionId)
+      const sess = (w?.sessions || []).find((s: any) => s.id === sessionId)
       setSession(sess || null)
       setLastExecution(le || {})
       setLoading(false)
-    })
+    }).catch(() => setLoading(false))
   }, [workoutId, sessionId])
 
   if (loading) return <AppLayout><div className="flex justify-center py-20"><Spinner className="text-4xl" /></div></AppLayout>

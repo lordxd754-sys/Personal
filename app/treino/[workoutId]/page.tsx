@@ -15,8 +15,9 @@ export default function WorkoutViewPage() {
 
   useEffect(() => {
     fetch(`/api/workouts/${workoutId}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { setWorkout(d); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [workoutId])
 
   if (loading) return <AppLayout><div className="flex justify-center py-20"><Spinner className="text-4xl" /></div></AppLayout>

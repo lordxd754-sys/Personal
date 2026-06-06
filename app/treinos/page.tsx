@@ -32,7 +32,7 @@ export default function TreinosPage() {
     const params = new URLSearchParams()
     if (statusFilter !== 'all') params.set('status', statusFilter)
     fetch(`/api/workouts?${params}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { setWorkouts(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [statusFilter])

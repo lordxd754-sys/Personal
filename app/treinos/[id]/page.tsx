@@ -67,7 +67,9 @@ export default function TreinoEditorPage() {
   async function loadWorkout() {
     setLoading(true)
     const res = await fetch(`/api/workouts/${workoutId}`)
+    if (!res.ok) { setLoading(false); return }
     const data = await res.json()
+    if (!data) { setLoading(false); return }
     setWorkout(data)
     setTitle(data.title || '')
     const content = data.content ? JSON.parse(data.content) : {}

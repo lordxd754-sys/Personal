@@ -13,7 +13,7 @@ export default function EditarAlunoPage() {
 
   useEffect(() => {
     fetch(`/api/students/${params.id}`)
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : null)
       .then((d) => {
         setStudent(d)
         setLoading(false)

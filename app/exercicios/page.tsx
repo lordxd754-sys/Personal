@@ -60,7 +60,7 @@ export default function ExerciciosPage() {
     if (type !== 'Todos') params.set('type', type)
     if (search) params.set('search', search)
     fetch(`/api/exercises?${params}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { setExercises(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [muscleGroup, equipment, level, type, search])

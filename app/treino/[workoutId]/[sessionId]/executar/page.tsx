@@ -28,8 +28,9 @@ export default function ExecutarPage() {
 
   useEffect(() => {
     fetch(`/api/workouts/${workoutId}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(w => {
+        if (!w) { setLoading(false); return }
         if (w.studentId) setStudentId(w.studentId)
         const sess = (w.sessions || []).find((s: any) => s.id === sessionId)
         if (sess) {
@@ -58,7 +59,7 @@ export default function ExecutarPage() {
         studentId,
         startedAt: new Date().toISOString(),
       }),
-    }).then(r => r.json()).then(d => { if (d.id) setExecutionId(d.id) })
+    }).then(r => r.ok ? r.json() : null).then(d => { if (d?.id) setExecutionId(d.id) })
   }, [exercises.length, workoutId, sessionId])
 
   // Workout timer

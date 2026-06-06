@@ -28,7 +28,7 @@ export default function ExercicioPage() {
 
   useEffect(() => {
     fetch(`/api/exercises/${params.id}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { setExercise(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [params.id])

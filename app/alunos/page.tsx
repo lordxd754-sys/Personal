@@ -60,7 +60,7 @@ export default function AlunosPage() {
     if (statusFilter !== 'all') params.set('status', statusFilter)
     if (levelFilter !== 'all') params.set('level', levelFilter)
     fetch(`/api/students?${params}`)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => { setStudents(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }

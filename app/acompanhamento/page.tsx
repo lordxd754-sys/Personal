@@ -26,7 +26,7 @@ export default function AcompanhamentoPage() {
   function fetchStudents() {
     setLoading(true)
     fetch('/api/students?status=ativo')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then((data: Student[]) => {
         const withDays = (Array.isArray(data) ? data : [])
           .map(s => ({ ...s, days: daysSince(s.lastContactAt) }))
