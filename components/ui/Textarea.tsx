@@ -10,9 +10,9 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, id, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={id} className="text-label-md text-text-secondary">
+          <label htmlFor={id} className="text-label-caps text-text-muted">
             {label}
           </label>
         )}
@@ -20,7 +20,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full px-3 py-2 bg-[#141414] border border-border rounded-md text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-primary transition-colors text-body-sm resize-none',
+            'w-full px-3 py-2 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(173,199,255,0.1)] transition-all duration-150 text-body-sm resize-none',
             error && 'border-error',
             className
           )}

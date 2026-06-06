@@ -11,9 +11,9 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, label, error, id, options, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={id} className="text-label-md text-text-secondary">
+          <label htmlFor={id} className="text-label-caps text-text-muted">
             {label}
           </label>
         )}
@@ -21,14 +21,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full px-3 py-2 bg-[#141414] border border-border rounded-md text-text-primary focus:outline-none focus:border-primary transition-colors text-body-sm appearance-none',
+            'w-full px-3 py-2 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(173,199,255,0.1)] transition-all duration-150 text-body-sm appearance-none',
             error && 'border-error',
             className
           )}
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
+            <option key={opt.value} value={opt.value} className="bg-surface-card">
               {opt.label}
             </option>
           ))}

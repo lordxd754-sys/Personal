@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { signOut } from 'next-auth/react'
 
 const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
@@ -22,32 +21,52 @@ export default function Sidebar({ overdueCount = 0 }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex flex-col w-60 bg-surface border-r border-border h-screen sticky top-0">
+    <aside className="hidden md:flex flex-col w-72 h-screen sticky top-0 bg-surface-card/80 backdrop-blur-xl border-r border-surface-border z-50">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-border">
-        <span className="material-symbols-outlined text-primary text-2xl">fitness_center</span>
-        <span className="text-title-md text-text-primary">PT Manager</span>
+      <div className="flex items-center gap-3 px-4 pt-5 pb-4">
+        <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>
+            fitness_center
+          </span>
+        </div>
+        <div>
+          <h1 className="text-[20px] leading-tight text-primary font-bold">PT Manager</h1>
+          <p className="text-label-caps text-text-muted">Elite Performance</p>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="px-4 mb-4">
+        <Link href="/alunos/novo">
+          <button className="w-full bg-primary text-on-primary-container font-semibold text-label-caps py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-primary-dim transition-colors active:scale-95 duration-150">
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Novo Aluno
+          </button>
+        </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 overflow-y-auto">
+      <nav className="flex-1 px-3 overflow-y-auto space-y-0.5">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
+            || (item.href === '/dashboard' && pathname === '/dashboard')
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-md mb-1 transition-colors relative',
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-label-caps font-medium transition-all duration-150 active:scale-95 relative',
                 isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-text-secondary hover:bg-surface-high hover:text-text-primary'
+                  ? 'bg-primary-container text-on-primary-container font-bold'
+                  : 'text-text-muted hover:bg-surface-container hover:text-on-surface'
               )}
             >
-              <span className="material-symbols-outlined text-xl">{item.icon}</span>
-              <span className="text-label-md">{item.label}</span>
+              <span className="material-symbols-outlined text-xl" style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
               {item.badge && overdueCount > 0 && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-error text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                <span className="ml-auto bg-error text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                   {overdueCount > 99 ? '99+' : overdueCount}
                 </span>
               )}
@@ -56,15 +75,22 @@ export default function Sidebar({ overdueCount = 0 }: SidebarProps) {
         })}
       </nav>
 
-      {/* Sign out */}
-      <div className="px-3 py-4 border-t border-border">
-        <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-md w-full text-text-secondary hover:bg-surface-high hover:text-text-primary transition-colors"
+      {/* Footer */}
+      <div className="mt-auto border-t border-surface-border pt-3 px-3 pb-4 space-y-0.5">
+        <a
+          href="#"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-label-caps text-text-muted hover:bg-surface-container hover:text-on-surface transition-all duration-150"
+        >
+          <span className="material-symbols-outlined text-xl">help</span>
+          <span>Suporte</span>
+        </a>
+        <Link
+          href="/login"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-label-caps text-text-muted hover:bg-surface-container hover:text-on-surface transition-all duration-150"
         >
           <span className="material-symbols-outlined text-xl">logout</span>
-          <span className="text-label-md">Sair</span>
-        </button>
+          <span>Sair</span>
+        </Link>
       </div>
     </aside>
   )

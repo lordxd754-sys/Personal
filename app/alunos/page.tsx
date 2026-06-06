@@ -1,169 +1,183 @@
 'use client'
 import { useState, useEffect } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Badge from '@/components/ui/Badge'
-import Select from '@/components/ui/Select'
 import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { getInitials, daysSince } from '@/lib/utils'
 import type { Student } from '@/types'
 
-function UrgencyBadge({ days }: { days: number }) {
-  if (days > 15) return <Badge variant="error"><span className="w-1.5 h-1.5 rounded-full bg-error inline-block mr-1" />{days}d</Badge>
-  if (days >= 13) return <Badge variant="warning"><span className="w-1.5 h-1.5 rounded-full bg-warning inline-block mr-1" />{days}d</Badge>
-  if (days < 999) return <Badge variant="success"><span className="w-1.5 h-1.5 rounded-full bg-success inline-block mr-1" />{days}d</Badge>
-  return <Badge variant="neutral">Nunca</Badge>
-}
-
-function LevelBadge({ level }: { level: string }) {
-  const variants: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    iniciante: 'success',
-    intermediario: 'warning',
-    avancado: 'error',
-  }
-  const labels: Record<string, string> = {
-    iniciante: 'Iniciante',
-    intermediario: 'Intermediário',
-    avancado: 'Avançado',
-  }
-  return <Badge variant={variants[level] || 'default'}>{labels[level] || level}</Badge>
-}
-
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, 'success' | 'warning' | 'neutral' | 'default'> = {
-    ativo: 'success',
-    pausado: 'warning',
-    inativo: 'neutral',
+  const styles: Record<string, string> = {
+    ativo: 'bg-success/10 text-success border-success/20',
+    pausado: 'bg-warning/10 text-warning border-warning/20',
+    inativo: 'bg-surface-container text-text-muted border-surface-border',
   }
-  const labels: Record<string, string> = {
-    ativo: 'Ativo',
-    pausado: 'Pausado',
-    inativo: 'Inativo',
-  }
-  return <Badge variant={map[status] || 'default'}>{labels[status] || status}</Badge>
+  const labels: Record<string, string> = { ativo: 'Ativo', pausado: 'Pausado', inativo: 'Inativo' }
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-semibold border ${styles[status] || styles.inativo}`}>
+      {labels[status] || status}
+    </span>
+  )
 }
+
+type FilterTab = 'todos' | 'ativo' | 'inativo'
 
 export default function AlunosPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('ativo')
-  const [levelFilter, setLevelFilter] = useState('all')
+  const [tab, setTab] = useState<FilterTab>('todos')
 
-  function fetchStudents() {
+  useEffect(() => {
     setLoading(true)
     const params = new URLSearchParams()
     if (search) params.set('search', search)
-    if (statusFilter !== 'all') params.set('status', statusFilter)
-    if (levelFilter !== 'all') params.set('level', levelFilter)
+    if (tab !== 'todos') params.set('status', tab)
     fetch(`/api/students?${params}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => { setStudents(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
-  }
+  }, [search, tab])
 
-  useEffect(() => { fetchStudents() }, [search, statusFilter, levelFilter])
+  const activeCount = students.filter(s => s.status === 'ativo').length
+  const inactiveCount = students.filter(s => s.status === 'inativo' || s.status === 'pausado').length
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+      {/* Mobile top bar */}
+      <header className="md:hidden sticky top-0 z-40 flex items-center px-4 h-14 bg-surface-card/80 backdrop-blur-xl border-b border-surface-border">
+        <span className="text-headline-lg-mobile font-bold text-on-surface flex-1">Alunos</span>
+        <Link href="/alunos/novo">
+          <button className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container">
+            <span className="material-symbols-outlined">add</span>
+          </button>
+        </Link>
+      </header>
+
+      <div className="p-4 md:p-6 max-w-[1200px] mx-auto space-y-6">
+        {/* Desktop header */}
+        <div className="hidden md:flex items-end justify-between mt-2">
           <div>
-            <h1 className="text-headline-lg text-text-primary">Alunos</h1>
-            <p className="text-body-sm text-text-secondary mt-1">{students.length} aluno{students.length !== 1 ? 's' : ''}</p>
+            <h2 className="text-headline-lg text-on-surface">Alunos</h2>
+            <p className="text-body-sm text-text-muted mt-1">Gerencie seus clientes e acompanhe o progresso.</p>
           </div>
           <Link href="/alunos/novo">
-            <Button>
-              <span className="material-symbols-outlined text-base">add</span>
-              Novo aluno
-            </Button>
+            <button className="bg-primary text-on-primary-container font-semibold text-label-caps px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dim transition-colors active:scale-95">
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Novo Aluno
+            </button>
           </Link>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6 p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Buscar por nome ou e-mail..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              options={[
-                { value: 'all', label: 'Todos os status' },
-                { value: 'ativo', label: 'Ativo' },
-                { value: 'pausado', label: 'Pausado' },
-                { value: 'inativo', label: 'Inativo' },
-              ]}
-              className="sm:w-44"
-            />
-            <Select
-              value={levelFilter}
-              onChange={e => setLevelFilter(e.target.value)}
-              options={[
-                { value: 'all', label: 'Todos os níveis' },
-                { value: 'iniciante', label: 'Iniciante' },
-                { value: 'intermediario', label: 'Intermediário' },
-                { value: 'avancado', label: 'Avançado' },
-              ]}
-              className="sm:w-44"
+        {/* Search + tabs */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[20px]">search</span>
+            <input
+              className="w-full pl-10 pr-4 py-2.5 bg-surface-container border border-surface-border rounded-lg text-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(173,199,255,0.1)] transition-all text-body-sm"
+              placeholder="Buscar aluno por nome..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
           </div>
-        </Card>
+          <div className="flex gap-2">
+            {([
+              ['todos', `Todos (${students.length})`],
+              ['ativo', `Ativos (${activeCount})`],
+              ['inativo', `Inativos (${inactiveCount})`],
+            ] as [FilterTab, string][]).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setTab(value)}
+                className={`px-4 py-2 rounded-full text-label-caps font-semibold transition-all duration-150 ${
+                  tab === value
+                    ? 'bg-primary-container text-on-primary-container'
+                    : 'bg-surface-container border border-surface-border text-text-muted hover:text-on-surface'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {/* Student list */}
+        {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-16"><Spinner className="text-4xl" /></div>
+          <div className="flex justify-center py-20">
+            <Spinner className="text-4xl text-primary" />
+          </div>
         ) : students.length === 0 ? (
-          <Card className="text-center py-16">
-            <span className="material-symbols-outlined text-5xl text-text-secondary mb-4 block">group_off</span>
-            <p className="text-title-md text-text-primary mb-2">Nenhum aluno encontrado</p>
-            <p className="text-body-sm text-text-secondary mb-6">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <span className="material-symbols-outlined text-5xl text-text-muted mb-4">group_off</span>
+            <p className="text-title-md text-on-surface mb-1">Nenhum aluno encontrado</p>
+            <p className="text-body-sm text-text-muted mb-6">
               {search ? 'Tente uma busca diferente' : 'Adicione seu primeiro aluno para começar'}
             </p>
-            <Link href="/alunos/novo"><Button>Adicionar aluno</Button></Link>
-          </Card>
+            <Link href="/alunos/novo">
+              <button className="bg-primary text-on-primary-container font-semibold text-label-caps px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dim transition-colors">
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Adicionar Aluno
+              </button>
+            </Link>
+          </div>
         ) : (
-          <div className="grid gap-3">
+          /* Card grid — 3 cols desktop, 1 col mobile */
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {students.map(student => {
               const days = daysSince(student.lastContactAt)
+              const isInactive = student.status === 'inativo'
               return (
-                <Link key={student.id} href={`/alunos/${student.id}`}>
-                  <Card className="hover:border-primary/30 transition-colors cursor-pointer p-4">
-                    <div className="flex items-center gap-4">
-                      {/* Avatar */}
-                      <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-label-md shrink-0">
+                <div
+                  key={student.id}
+                  className={`bg-surface-card border rounded-xl p-5 flex flex-col gap-4 hover:border-primary/40 transition-colors duration-150 group ${
+                    isInactive ? 'border-surface-border opacity-70' : 'border-surface-border'
+                  }`}
+                >
+                  {/* Card header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-label-sm shrink-0">
                         {getInitials(student.name)}
                       </div>
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-label-md text-text-primary">{student.name}</p>
-                          <StatusBadge status={student.status} />
-                          <LevelBadge level={student.level} />
-                        </div>
-                        <p className="text-label-sm text-text-secondary mt-0.5 truncate">
-                          {student.goal || 'Sem objetivo definido'}
-                          {student.city ? ` · ${student.city}${student.state ? '/' + student.state : ''}` : ''}
-                        </p>
+                      <div>
+                        <p className="text-label-md text-on-surface font-semibold">{student.name}</p>
+                        <StatusBadge status={student.status} />
                       </div>
-                      {/* Last contact */}
-                      <div className="hidden sm:flex flex-col items-end gap-1 shrink-0">
-                        <p className="text-label-sm text-text-secondary">Último contato</p>
-                        <UrgencyBadge days={days} />
-                      </div>
-                      <span className="material-symbols-outlined text-text-secondary text-xl">chevron_right</span>
                     </div>
-                  </Card>
-                </Link>
+                    <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
+                      <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                    </button>
+                  </div>
+
+                  {/* Meta */}
+                  <div className="grid grid-cols-2 gap-3 text-body-sm">
+                    <div>
+                      <p className="text-text-muted text-label-sm mb-0.5">Último Treino</p>
+                      <p className="text-on-surface font-medium">
+                        {days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : days < 999 ? `Há ${days} dias` : 'Nunca'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-text-muted text-label-sm mb-0.5">Objetivo</p>
+                      <p className="text-on-surface font-medium truncate">{student.goal || '—'}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-1 border-t border-surface-border">
+                    <Link href={`/alunos/${student.id}`} className="flex-1">
+                      <button className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-surface-container border border-surface-border text-on-surface text-label-caps hover:bg-surface-container-high transition-colors">
+                        <span className="material-symbols-outlined text-[16px] text-primary">fitness_center</span>
+                        Ver Treino
+                      </button>
+                    </Link>
+                    <Link href={`/alunos/${student.id}`}>
+                      <button className="w-9 h-9 rounded-lg bg-surface-container border border-surface-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/40 transition-colors">
+                        <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
+                      </button>
+                    </Link>
+                  </div>
+                </div>
               )
             })}
           </div>

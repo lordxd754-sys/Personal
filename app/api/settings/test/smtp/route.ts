@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
-  const session = await auth()
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const { smtpHost, smtpPort, smtpUser, smtpPass } = await request.json() as {

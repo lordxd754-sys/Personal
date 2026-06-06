@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
@@ -50,7 +50,7 @@ Formato JSON obrigatório:
 }`
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const apiKey = process.env.GEMINI_API_KEY

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const body = await request.json() as Record<string, unknown>

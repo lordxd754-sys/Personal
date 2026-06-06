@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
-  const session = await auth()
+  const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const { studentId, message } = await request.json() as { studentId: string; message: string }
