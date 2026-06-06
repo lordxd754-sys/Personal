@@ -7,6 +7,7 @@ const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'groups', label: 'Alunos', href: '/alunos' },
   { icon: 'fitness_center', label: 'Treinos', href: '/treinos' },
+  { icon: 'menu_book', label: 'Exercícios', href: '/exercicios' },
   { icon: 'person', label: 'Perfil', href: '/perfil' },
 ]
 
