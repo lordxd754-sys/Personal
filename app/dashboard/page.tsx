@@ -44,7 +44,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch('/api/dashboard')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d && d.metrics) setData(d)
         setLoading(false)
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div className="flex flex-col gap-2">
-                {activeTab === 'executions' && (data?.recentActivity.executions || []).map((e: any) => (
+                {activeTab === 'executions' && (data?.recentActivity?.executions || []).map((e: any) => (
                   <div key={e.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-surface-high">
                     <span className="material-symbols-outlined text-primary text-base">fitness_center</span>
                     <div className="min-w-0">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                {activeTab === 'followUps' && (data?.recentActivity.followUps || []).map((f: any) => (
+                {activeTab === 'followUps' && (data?.recentActivity?.followUps || []).map((f: any) => (
                   <div key={f.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-surface-high">
                     <span className="material-symbols-outlined text-blue-400 text-base">mail</span>
                     <div className="min-w-0">
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                {activeTab === 'assessments' && (data?.recentActivity.assessments || []).map((a: any) => (
+                {activeTab === 'assessments' && (data?.recentActivity?.assessments || []).map((a: any) => (
                   <div key={a.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-surface-high">
                     <span className="material-symbols-outlined text-warning text-base">monitoring</span>
                     <div className="min-w-0">
@@ -164,13 +164,13 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                {activeTab === 'executions' && !data?.recentActivity.executions.length && (
+                {activeTab === 'executions' && !data?.recentActivity?.executions?.length && (
                   <p className="text-label-sm text-text-secondary text-center py-4">Nenhuma execução registrada</p>
                 )}
-                {activeTab === 'followUps' && !data?.recentActivity.followUps.length && (
+                {activeTab === 'followUps' && !data?.recentActivity?.followUps?.length && (
                   <p className="text-label-sm text-text-secondary text-center py-4">Nenhum follow-up registrado</p>
                 )}
-                {activeTab === 'assessments' && !data?.recentActivity.assessments.length && (
+                {activeTab === 'assessments' && !data?.recentActivity?.assessments?.length && (
                   <p className="text-label-sm text-text-secondary text-center py-4">Nenhuma avaliação registrada</p>
                 )}
               </div>
