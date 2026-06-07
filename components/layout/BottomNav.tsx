@@ -28,7 +28,7 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-150 active:scale-95 relative',
+                'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-150 active:scale-95 relative',
                 isActive ? 'text-primary' : 'text-text-muted'
               )}
             >
