@@ -22,118 +22,110 @@ type AgendaEvent = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  sessao: 'bg-primary/20 text-primary border-primary/30',
-  avaliacao: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  compromisso: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  outro: 'bg-surface-container text-text-secondary border-border',
+  sessao:      'bg-primary/20 text-primary border-primary/30',
+  avaliacao:   'bg-tertiary/20 text-tertiary border-tertiary/30',
+  compromisso: 'bg-secondary/20 text-secondary border-secondary/30',
+  outro:       'bg-surface-container text-on-surface-variant border-outline-variant',
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  sessao: 'Sessão',
-  avaliacao: 'Avaliação',
+  sessao:      'Sessão',
+  avaliacao:   'Avaliação',
   compromisso: 'Compromisso',
-  outro: 'Outro',
+  outro:       'Outro',
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  agendado: 'Agendado',
+  agendado:  'Agendado',
   concluido: 'Concluído',
   cancelado: 'Cancelado',
 }
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-
-function toLocalDateStr(date: Date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
+const MONTHS   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 
 function toDatetimeLocal(iso: string) {
-  const d = new Date(iso)
-  const y = d.getFullYear()
+  const d  = new Date(iso)
+  const y  = d.getFullYear()
   const mo = String(d.getMonth() + 1).padStart(2, '0')
   const da = String(d.getDate()).padStart(2, '0')
-  const h = String(d.getHours()).padStart(2, '0')
+  const h  = String(d.getHours()).padStart(2, '0')
   const mi = String(d.getMinutes()).padStart(2, '0')
   return `${y}-${mo}-${da}T${h}:${mi}`
 }
 
 const emptyForm = {
-  title: '',
+  title:       '',
   description: '',
-  studentId: '',
-  startAt: '',
-  endAt: '',
-  type: 'sessao' as AgendaEvent['type'],
-  status: 'agendado' as AgendaEvent['status'],
-  notes: '',
+  studentId:   '',
+  startAt:     '',
+  endAt:       '',
+  type:        'sessao'   as AgendaEvent['type'],
+  status:      'agendado' as AgendaEvent['status'],
+  notes:       '',
 }
 
 export default function AgendaPage() {
   const today = new Date()
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
-  const [events, setEvents] = useState<AgendaEvent[]>([])
-  const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [events,        setEvents]        = useState<AgendaEvent[]>([])
+  const [students,      setStudents]      = useState<Student[]>([])
+  const [loading,       setLoading]       = useState(true)
+  const [modalOpen,     setModalOpen]     = useState(false)
+  const [detailOpen,    setDetailOpen]    = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
-  const [form, setForm] = useState(emptyForm)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [form,          setForm]          = useState(emptyForm)
+  const [saving,        setSaving]        = useState(false)
+  const [formError,     setFormError]     = useState('')
 
-  const year = currentDate.getFullYear()
+  const year  = currentDate.getFullYear()
   const month = currentDate.getMonth()
 
   const fetchEvents = useCallback(async () => {
     setLoading(true)
     const from = new Date(year, month, 1).toISOString()
-    const to = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
-    const res = await fetch(`/api/agenda?from=${from}&to=${to}`)
+    const to   = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
+    const res  = await fetch(`/api/agenda?from=${from}&to=${to}`)
     if (res.ok) setEvents(await res.json())
     setLoading(false)
   }, [year, month])
 
-  useEffect(() => {
-    fetchEvents()
-  }, [fetchEvents])
+  useEffect(() => { fetchEvents() }, [fetchEvents])
 
   useEffect(() => {
     fetch('/api/students?status=ativo&limit=200')
-      .then((r) => r.ok ? r.json() : { data: [] })
+      .then((r) => r.ok ? r.json() : [])
       .then((d) => setStudents(Array.isArray(d) ? d : d.data ?? []))
   }, [])
 
   function prevMonth() { setCurrentDate(new Date(year, month - 1, 1)) }
   function nextMonth() { setCurrentDate(new Date(year, month + 1, 1)) }
-  function goToday() { setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1)) }
+  function goToday()   { setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1)) }
 
   function openCreate(dateStr?: string) {
+    setSelectedEvent(null)
     setForm({
       ...emptyForm,
       startAt: dateStr ? `${dateStr}T08:00` : '',
-      endAt: dateStr ? `${dateStr}T09:00` : '',
+      endAt:   dateStr ? `${dateStr}T09:00` : '',
     })
-    setError('')
+    setFormError('')
     setModalOpen(true)
   }
 
   function openEdit(ev: AgendaEvent) {
     setSelectedEvent(ev)
     setForm({
-      title: ev.title,
+      title:       ev.title,
       description: ev.description ?? '',
-      studentId: ev.studentId ?? '',
-      startAt: toDatetimeLocal(ev.startAt),
-      endAt: ev.endAt ? toDatetimeLocal(ev.endAt) : '',
-      type: ev.type,
-      status: ev.status,
-      notes: ev.notes ?? '',
+      studentId:   ev.studentId   ?? '',
+      startAt:     toDatetimeLocal(ev.startAt),
+      endAt:       ev.endAt ? toDatetimeLocal(ev.endAt) : '',
+      type:        ev.type,
+      status:      ev.status,
+      notes:       ev.notes ?? '',
     })
-    setError('')
+    setFormError('')
     setDetailOpen(false)
     setModalOpen(true)
   }
@@ -144,24 +136,23 @@ export default function AgendaPage() {
   }
 
   async function handleSave() {
-    if (!form.title.trim()) { setError('Título obrigatório.'); return }
-    if (!form.startAt) { setError('Data/hora obrigatória.'); return }
+    if (!form.title.trim()) { setFormError('Título obrigatório.'); return }
+    if (!form.startAt)      { setFormError('Data/hora obrigatória.'); return }
     setSaving(true)
-    setError('')
+    setFormError('')
 
     const payload = {
       ...form,
-      startAt: new Date(form.startAt).toISOString(),
-      endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
+      startAt:   new Date(form.startAt).toISOString(),
+      endAt:     form.endAt ? new Date(form.endAt).toISOString() : null,
       studentId: form.studentId || null,
     }
 
     const isEdit = !!selectedEvent
-    const res = await fetch(isEdit ? `/api/agenda/${selectedEvent!.id}` : '/api/agenda', {
-      method: isEdit ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+    const res = await fetch(
+      isEdit ? `/api/agenda/${selectedEvent!.id}` : '/api/agenda',
+      { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    )
 
     if (res.ok) {
       setModalOpen(false)
@@ -169,7 +160,7 @@ export default function AgendaPage() {
       fetchEvents()
     } else {
       const d = await res.json()
-      setError(d.error ?? 'Erro ao salvar.')
+      setFormError(d.error ?? 'Erro ao salvar.')
     }
     setSaving(false)
   }
@@ -182,74 +173,112 @@ export default function AgendaPage() {
     fetchEvents()
   }
 
-  // Build calendar grid
-  const firstDay = new Date(year, month, 1).getDay()
+  // --- Calendar grid ---
+  const firstDay    = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const todayStr = toLocalDateStr(today)
 
   const cells: (number | null)[] = []
   for (let i = 0; i < firstDay; i++) cells.push(null)
   for (let d = 1; d <= daysInMonth; d++) cells.push(d)
   while (cells.length % 7 !== 0) cells.push(null)
 
-  function eventsForDay(day: number) {
-    const prefix = `${String(year)}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return events.filter((e) => e.startAt.startsWith(prefix))
+  // Fix: compare using local date parts (not UTC string prefix) to handle timezone correctly
+  function eventsForDay(day: number): AgendaEvent[] {
+    return events.filter((e) => {
+      const d = new Date(e.startAt)
+      return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
+    })
   }
+
+  const todayY = today.getFullYear()
+  const todayM = today.getMonth()
+  const todayD = today.getDate()
+
+  const datetimeInputCls = 'w-full px-3 py-2 bg-surface-container-low border border-border-luminous rounded-lg text-on-surface text-body-md focus:outline-none focus:border-primary transition-all'
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-headline-sm text-text-primary">Agenda</h1>
-          <p className="text-body-sm text-text-secondary mt-0.5">Gerencie suas sessões e compromissos</p>
+          <h1 className="text-headline-sm font-semibold text-on-surface">Agenda</h1>
+          <p className="text-body-md text-on-surface-variant mt-0.5">Gerencie suas sessões e compromissos</p>
         </div>
         <Button onClick={() => openCreate()}>
-          <span className="material-symbols-outlined text-sm">add</span>
+          <span className="material-symbols-outlined text-[18px]">add</span>
           Novo evento
         </Button>
       </div>
 
-      {/* Calendar navigation */}
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors">
-            <span className="material-symbols-outlined text-lg text-text-secondary">chevron_left</span>
+      {/* Calendar */}
+      <div className="bento-card rounded-xl overflow-hidden">
+        {/* Month navigation */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-luminous">
+          <button
+            onClick={prevMonth}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant hover:text-on-surface"
+          >
+            <span className="material-symbols-outlined text-lg">chevron_left</span>
           </button>
           <div className="flex items-center gap-3">
-            <h2 className="text-title-md text-text-primary">{MONTHS[month]} {year}</h2>
-            <button onClick={goToday} className="text-label-sm text-primary hover:underline">Hoje</button>
+            <h2 className="text-headline-sm font-semibold text-on-surface">{MONTHS[month]} {year}</h2>
+            <button
+              onClick={goToday}
+              className="text-label-caps text-primary hover:text-primary-fixed transition-colors"
+            >
+              Hoje
+            </button>
           </div>
-          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors">
-            <span className="material-symbols-outlined text-lg text-text-secondary">chevron_right</span>
+          <button
+            onClick={nextMonth}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant hover:text-on-surface"
+          >
+            <span className="material-symbols-outlined text-lg">chevron_right</span>
           </button>
         </div>
 
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b border-border">
+        <div className="grid grid-cols-7 border-b border-border-luminous">
           {WEEKDAYS.map((d) => (
-            <div key={d} className="py-2 text-center text-label-sm text-text-secondary font-medium">{d}</div>
+            <div key={d} className="py-2 text-center text-label-caps text-on-surface-variant">
+              {d}
+            </div>
           ))}
         </div>
 
-        {/* Calendar cells */}
+        {/* Cells */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-text-secondary text-body-sm">Carregando...</div>
+          <div className="flex items-center justify-center py-20 text-on-surface-variant text-body-md">
+            Carregando...
+          </div>
         ) : (
           <div className="grid grid-cols-7">
             {cells.map((day, i) => {
-              if (!day) return <div key={`empty-${i}`} className="min-h-[90px] border-b border-r border-border/50 bg-background/30" />
+              if (!day) {
+                return (
+                  <div
+                    key={`empty-${i}`}
+                    className="min-h-[88px] border-b border-r border-border-luminous bg-surface-container-lowest/30"
+                  />
+                )
+              }
+              const isToday = year === todayY && month === todayM && day === todayD
               const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-              const isToday = dateStr === todayStr
               const dayEvents = eventsForDay(day)
+
               return (
                 <div
                   key={day}
-                  className="min-h-[90px] border-b border-r border-border/50 p-1.5 cursor-pointer hover:bg-surface-container/30 transition-colors group"
+                  className="min-h-[88px] border-b border-r border-border-luminous p-1.5 cursor-pointer hover:bg-surface-container/40 transition-colors group"
                   onClick={() => openCreate(dateStr)}
                 >
-                  <div className={`w-6 h-6 flex items-center justify-center rounded-full text-label-sm font-semibold mb-1 ${isToday ? 'bg-primary text-on-primary-container' : 'text-text-secondary group-hover:text-text-primary'}`}>
+                  <div
+                    className={`w-6 h-6 flex items-center justify-center rounded-full text-label-caps font-semibold mb-1 transition-colors ${
+                      isToday
+                        ? 'bg-primary text-on-primary'
+                        : 'text-on-surface-variant group-hover:text-on-surface'
+                    }`}
+                  >
                     {day}
                   </div>
                   <div className="flex flex-col gap-0.5">
@@ -257,13 +286,16 @@ export default function AgendaPage() {
                       <button
                         key={ev.id}
                         onClick={(e) => { e.stopPropagation(); openDetail(ev) }}
-                        className={`w-full text-left px-1.5 py-0.5 rounded text-[11px] leading-tight truncate border ${TYPE_COLORS[ev.type]} ${ev.status === 'cancelado' ? 'opacity-40 line-through' : ''}`}
+                        className={`w-full text-left px-1.5 py-0.5 rounded text-[11px] leading-tight truncate border transition-opacity ${TYPE_COLORS[ev.type]} ${ev.status === 'cancelado' ? 'opacity-40 line-through' : ''}`}
                       >
-                        {new Date(ev.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} {ev.title}
+                        {new Date(ev.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}{' '}
+                        {ev.title}
                       </button>
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[10px] text-text-secondary pl-1">+{dayEvents.length - 3} mais</span>
+                      <span className="text-[10px] text-on-surface-variant pl-1">
+                        +{dayEvents.length - 3} mais
+                      </span>
                     )}
                   </div>
                 </div>
@@ -273,48 +305,57 @@ export default function AgendaPage() {
         )}
       </div>
 
-      {/* Event detail modal */}
+      {/* Detail modal */}
       <Modal isOpen={detailOpen} onClose={() => setDetailOpen(false)} title="Evento" size="sm">
         {selectedEvent && (
           <div className="flex flex-col gap-4">
+            <span
+              className={`inline-flex items-center self-start px-2 py-0.5 rounded-full text-label-caps border ${TYPE_COLORS[selectedEvent.type]}`}
+            >
+              {TYPE_LABELS[selectedEvent.type]}
+            </span>
+
             <div>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-label-sm border ${TYPE_COLORS[selectedEvent.type]}`}>
-                {TYPE_LABELS[selectedEvent.type]}
-              </span>
+              <h3 className="text-headline-sm font-semibold text-on-surface">{selectedEvent.title}</h3>
+              {selectedEvent.description && (
+                <p className="text-body-md text-on-surface-variant mt-1">{selectedEvent.description}</p>
+              )}
             </div>
-            <div>
-              <h3 className="text-title-sm text-text-primary">{selectedEvent.title}</h3>
-              {selectedEvent.description && <p className="text-body-sm text-text-secondary mt-1">{selectedEvent.description}</p>}
-            </div>
-            <div className="flex flex-col gap-2 text-body-sm text-text-secondary">
+
+            <div className="flex flex-col gap-2 text-body-md text-on-surface-variant">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">schedule</span>
+                <span className="material-symbols-outlined text-base text-primary">schedule</span>
                 <span>
                   {new Date(selectedEvent.startAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
-                  {selectedEvent.endAt && ` → ${new Date(selectedEvent.endAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
+                  {selectedEvent.endAt &&
+                    ` → ${new Date(selectedEvent.endAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
                 </span>
               </div>
               {selectedEvent.student && (
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">person</span>
+                  <span className="material-symbols-outlined text-base text-primary">person</span>
                   <span>{selectedEvent.student.name}</span>
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">flag</span>
+                <span className="material-symbols-outlined text-base text-primary">flag</span>
                 <span>{STATUS_LABELS[selectedEvent.status]}</span>
               </div>
             </div>
+
             {selectedEvent.notes && (
-              <p className="text-body-sm text-text-secondary bg-surface-container rounded-lg p-3">{selectedEvent.notes}</p>
+              <p className="text-body-md text-on-surface-variant bg-surface-container rounded-lg p-3">
+                {selectedEvent.notes}
+              </p>
             )}
+
             <div className="flex gap-2 pt-2">
               <Button variant="secondary" className="flex-1" onClick={() => openEdit(selectedEvent)}>
-                <span className="material-symbols-outlined text-sm">edit</span>
+                <span className="material-symbols-outlined text-[18px]">edit</span>
                 Editar
               </Button>
               <Button variant="danger" onClick={() => handleDelete(selectedEvent.id)}>
-                <span className="material-symbols-outlined text-sm">delete</span>
+                <span className="material-symbols-outlined text-[18px]">delete</span>
               </Button>
             </div>
           </div>
@@ -336,26 +377,28 @@ export default function AgendaPage() {
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
           />
+
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-label-caps text-text-muted">Início</label>
+              <label className="text-label-caps text-on-surface-variant uppercase tracking-widest">Início</label>
               <input
                 type="datetime-local"
                 value={form.startAt}
                 onChange={(e) => setForm((p) => ({ ...p, startAt: e.target.value }))}
-                className="px-3 py-2 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface text-body-sm focus:outline-none focus:border-primary transition-all"
+                className={datetimeInputCls}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-label-caps text-text-muted">Fim</label>
+              <label className="text-label-caps text-on-surface-variant uppercase tracking-widest">Fim</label>
               <input
                 type="datetime-local"
                 value={form.endAt}
                 onChange={(e) => setForm((p) => ({ ...p, endAt: e.target.value }))}
-                className="px-3 py-2 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface text-body-sm focus:outline-none focus:border-primary transition-all"
+                className={datetimeInputCls}
               />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <Select
               id="type"
@@ -363,10 +406,10 @@ export default function AgendaPage() {
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as AgendaEvent['type'] }))}
               options={[
-                { value: 'sessao', label: 'Sessão' },
-                { value: 'avaliacao', label: 'Avaliação' },
+                { value: 'sessao',      label: 'Sessão' },
+                { value: 'avaliacao',   label: 'Avaliação' },
                 { value: 'compromisso', label: 'Compromisso' },
-                { value: 'outro', label: 'Outro' },
+                { value: 'outro',       label: 'Outro' },
               ]}
             />
             <Select
@@ -375,12 +418,13 @@ export default function AgendaPage() {
               value={form.status}
               onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as AgendaEvent['status'] }))}
               options={[
-                { value: 'agendado', label: 'Agendado' },
+                { value: 'agendado',  label: 'Agendado' },
                 { value: 'concluido', label: 'Concluído' },
                 { value: 'cancelado', label: 'Cancelado' },
               ]}
             />
           </div>
+
           <Select
             id="student"
             label="Aluno (opcional)"
@@ -391,6 +435,7 @@ export default function AgendaPage() {
               ...students.map((s) => ({ value: s.id, label: s.name })),
             ]}
           />
+
           <Textarea
             id="description"
             label="Descrição"
@@ -399,6 +444,7 @@ export default function AgendaPage() {
             onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
             rows={2}
           />
+
           <Textarea
             id="notes"
             label="Notas internas"
@@ -407,9 +453,17 @@ export default function AgendaPage() {
             onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
             rows={2}
           />
-          {error && <p className="text-error text-body-sm">{error}</p>}
+
+          {formError && (
+            <p className="text-error text-body-md">{formError}</p>
+          )}
+
           <div className="flex gap-2 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => { setModalOpen(false); setSelectedEvent(null) }}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => { setModalOpen(false); setSelectedEvent(null) }}
+            >
               Cancelar
             </Button>
             <Button className="flex-1" loading={saving} onClick={handleSave}>
