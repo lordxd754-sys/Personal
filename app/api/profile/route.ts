@@ -28,8 +28,8 @@ export async function PUT(request: NextRequest) {
     const { password, ...profileData } = body
 
     const updateData: Record<string, unknown> = { ...profileData }
-    if (password && typeof password === 'string' && password.length >= 6) {
-      updateData.password = await bcrypt.hash(password, 10)
+    if (password && typeof password === 'string' && password.length >= 8) {
+      updateData.password = await bcrypt.hash(password, 12)
     }
 
     const { data, error } = await supabaseAdmin

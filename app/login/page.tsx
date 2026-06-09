@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
@@ -79,7 +80,10 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-label-sm text-text-secondary mt-4">
-          Acesso: admin@ptmanager.com / admin123
+          Não tem uma conta?{' '}
+          <Link href="/register" className="text-primary hover:underline">
+            Criar conta
+          </Link>
         </p>
       </div>
     </div>
