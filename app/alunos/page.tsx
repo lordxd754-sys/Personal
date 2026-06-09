@@ -127,9 +127,10 @@ export default function AlunosPage() {
               const days = daysSince(student.lastContactAt)
               const isInactive = student.status === 'inativo'
               return (
-                <div
+                <Link
                   key={student.id}
-                  className={`bg-surface-card border rounded-xl p-5 flex flex-col gap-4 hover:border-primary/40 transition-colors duration-150 group ${
+                  href={`/alunos/${student.id}`}
+                  className={`bg-surface-card border rounded-xl p-5 flex flex-col gap-4 hover:border-primary/40 transition-colors duration-150 group cursor-pointer ${
                     isInactive ? 'border-surface-border opacity-70' : 'border-surface-border'
                   }`}
                 >
@@ -144,15 +145,15 @@ export default function AlunosPage() {
                         <StatusBadge status={student.status} />
                       </div>
                     </div>
-                    <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">more_vert</span>
-                    </button>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted">
+                      <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                    </div>
                   </div>
 
                   {/* Meta */}
                   <div className="grid grid-cols-2 gap-3 text-body-sm">
                     <div>
-                      <p className="text-text-muted text-label-sm mb-0.5">Último Treino</p>
+                      <p className="text-text-muted text-label-sm mb-0.5">Último contato</p>
                       <p className="text-on-surface font-medium">
                         {days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : days < 999 ? `Há ${days} dias` : 'Nunca'}
                       </p>
@@ -162,22 +163,7 @@ export default function AlunosPage() {
                       <p className="text-on-surface font-medium truncate">{student.goal || '—'}</p>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-1 border-t border-surface-border">
-                    <Link href={`/alunos/${student.id}`} className="flex-1">
-                      <button className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-surface-container border border-surface-border text-on-surface text-label-caps hover:bg-surface-container-high transition-colors">
-                        <span className="material-symbols-outlined text-[16px] text-primary">fitness_center</span>
-                        Ver Treino
-                      </button>
-                    </Link>
-                    <Link href={`/alunos/${student.id}`}>
-                      <button className="w-9 h-9 rounded-lg bg-surface-container border border-surface-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/40 transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
-                      </button>
-                    </Link>
-                  </div>
-                </div>
+                </Link>
               )
             })}
           </div>

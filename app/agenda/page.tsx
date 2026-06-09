@@ -732,7 +732,7 @@ function MiniCalendar({ date, events, onDaySelect }: {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function AgendaPage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [connected, setConnected] = useState<boolean | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(false)
@@ -746,18 +746,19 @@ export default function AgendaPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const today = new Date()
 
-  // Check Google connection
+  // Check Google connection — wait for session to finish loading
   useEffect(() => {
-    if (!session?.user) return
+    if (sessionStatus === 'loading') return
+    if (sessionStatus === 'unauthenticated') { setConnected(false); return }
     fetch('/api/calendar/status')
-      .then(r => r.json())
-      .then(d => setConnected(d.connected))
+      .then(r => r.ok ? r.json() : { connected: false })
+      .then(d => setConnected(!!d.connected))
       .catch(() => setConnected(false))
-  }, [session])
+  }, [sessionStatus])
 
   // Fetch students
   useEffect(() => {
-    if (!session?.user) return
+    if (sessionStatus !== 'authenticated') return
     fetch('/api/students')
       .then(r => r.json())
       .then(d => setStudents((d.students || d || []).map((s: any) => ({ id: s.id, name: s.name, goal: s.goal }))))
