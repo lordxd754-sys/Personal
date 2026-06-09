@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import type { CalendarEvent, GoogleEventInput } from '@/lib/google-calendar'
-import { GOOGLE_COLORS } from '@/lib/google-calendar'
+import { GOOGLE_COLORS } from '@/lib/calendar-colors'
 
 type ViewMode = 'month' | 'week' | 'day' | 'agenda'
 
