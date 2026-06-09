@@ -5,14 +5,15 @@ const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true'
 
 export default DISABLE_AUTH
   ? function middleware(req: NextRequest) {
-      if (req.nextUrl.pathname === '/login') {
+      const p = req.nextUrl.pathname
+      if (p === '/login' || p === '/register') {
         return NextResponse.redirect(new URL('/dashboard', req.url))
       }
     }
   : auth(function middleware(req) {
       const isLoggedIn = !!req.auth
       const pathname = req.nextUrl.pathname
-      const isAuthPage = pathname === '/login'
+      const isAuthPage = pathname === '/login' || pathname === '/register'
 
       if (!isLoggedIn && !isAuthPage) {
         return NextResponse.redirect(new URL('/login', req.url))

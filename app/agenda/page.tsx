@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { signIn, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import AppLayout from '@/components/layout/AppLayout'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
@@ -371,7 +371,7 @@ function NotConnected() {
         </div>
         <Button
           loading={loading}
-          onClick={() => { setLoading(true); signIn('google', { callbackUrl: '/agenda' }) }}
+          onClick={() => { setLoading(true); window.location.href = '/api/auth/google-connect' }}
           className="w-full gap-2"
         >
           <span className="material-symbols-outlined text-lg">login</span>

@@ -1,5 +1,6 @@
 import 'server-only'
 import { google } from 'googleapis'
+import { GOOGLE_COLORS } from './calendar-colors'
 
 export interface GoogleEventInput {
   title: string
