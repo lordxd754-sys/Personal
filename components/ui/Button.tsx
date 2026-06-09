@@ -10,18 +10,26 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95'
+    const base =
+      'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95'
+
     const variants = {
-      primary: 'bg-primary text-on-primary-container hover:bg-primary-dim',
-      secondary: 'bg-transparent border border-surface-border text-on-surface hover:bg-surface-container',
-      danger: 'bg-error/10 border border-error/30 text-error hover:bg-error/20',
-      ghost: 'bg-transparent text-text-muted hover:text-on-surface hover:bg-surface-container',
+      primary:
+        'bg-primary text-on-primary text-label-caps tactile-btn hover:shadow-[0_0_15px_rgba(173,198,255,0.3)] hover:border-primary',
+      secondary:
+        'tactile-btn text-on-surface text-label-caps',
+      danger:
+        'bg-error-container/20 border border-error/30 text-error hover:bg-error-container/30',
+      ghost:
+        'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant',
     }
+
     const sizes = {
-      sm: 'px-3 py-1.5 text-label-sm',
+      sm: 'px-3 py-1.5 text-label-caps',
       md: 'px-4 py-2 text-label-caps',
-      lg: 'px-6 py-3 text-body-sm',
+      lg: 'px-6 py-3 text-body-lg',
     }
+
     return (
       <button
         ref={ref}

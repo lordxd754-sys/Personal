@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { icon: 'groups', label: 'Alunos', href: '/alunos' },
+  { icon: 'group', label: 'Alunos', href: '/alunos' },
   { icon: 'fitness_center', label: 'Treinos', href: '/treinos' },
-  { icon: 'menu_book', label: 'Exercícios', href: '/exercicios' },
-  { icon: 'person', label: 'Perfil', href: '/perfil' },
+  { icon: 'calendar_today', label: 'Agenda', href: '/agenda' },
+  { icon: 'analytics', label: 'Stats', href: '/acompanhamento' },
 ]
 
 interface BottomNavProps {
@@ -19,35 +19,33 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-card/90 backdrop-blur-xl border-t border-surface-border z-40">
-      <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-150 active:scale-95 relative',
-                isActive ? 'text-primary' : 'text-text-muted'
-              )}
+    <nav className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-surface-glass backdrop-blur-xl border border-border-luminous rounded-full px-2 py-2 z-50"
+      style={{ backgroundColor: 'rgba(18,18,20,0.85)' }}
+    >
+      {navItems.map((item) => {
+        const isActive =
+          pathname === item.href ||
+          (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-150 active:scale-90 relative',
+              isActive
+                ? 'bg-primary-container text-on-primary-container'
+                : 'text-on-surface-variant hover:text-on-surface'
+            )}
+          >
+            <span
+              className="material-symbols-outlined text-xl"
+              style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
             >
-              <span
-                className="material-symbols-outlined text-2xl"
-                style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
-              >
-                {item.icon}
-              </span>
-              <span className={cn('text-[10px] font-semibold', isActive ? 'text-primary' : 'text-text-muted')}>
-                {item.label}
-              </span>
-              {isActive && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
-              )}
-            </Link>
-          )
-        })}
-      </div>
+              {item.icon}
+            </span>
+          </Link>
+        )
+      })}
     </nav>
   )
 }

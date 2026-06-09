@@ -5,14 +5,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #111317;
-  --surface: #18181B;
+html {
+  color-scheme: dark;
 }
 
 body {
-  background-color: #111317;
-  color: #e2e2e8;
+  background-color: #131315;
+  color: #e5e1e4;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -23,7 +22,7 @@ body {
   user-select: none;
 }
 
-/* Custom scrollbar — Electric Blue accent */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -32,9 +31,57 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272A;
+  background: #424754;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #8c909f;
+}
+
+/* Elite Performance Design System */
+.bento-card {
+  background-color: #121214;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+.bento-card:hover {
+  box-shadow: 0 15px 40px -15px rgba(173, 198, 255, 0.05);
+}
+
+.tactile-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%), #2a2a2c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tactile-btn:hover {
+  box-shadow: 0 0 15px rgba(173, 198, 255, 0.2);
+  border-color: #adc6ff;
+}
+
+.ambient-glow {
+  position: relative;
+}
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 40px;
+  background: radial-gradient(ellipse at center, rgba(173, 198, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.ghost-input {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  transition: all 0.2s;
+}
+.ghost-input:focus-within {
+  background-color: #121214;
+  border-color: #adc6ff;
+  border-radius: 0.5rem;
+  border-width: 1px;
 }

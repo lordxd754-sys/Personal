@@ -28,14 +28,23 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative w-full bg-surface-card/90 backdrop-blur-xl border border-surface-border rounded-xl shadow-2xl shadow-black/50', sizes[size])}>
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div
+        className={cn(
+          'relative w-full bg-surface-glass backdrop-blur-2xl border border-border-luminous rounded-xl shadow-2xl',
+          sizes[size]
+        )}
+        style={{ backgroundColor: 'rgba(18,18,20,0.95)' }}
+      >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-surface-border">
-            <h3 className="text-title-md text-on-surface">{title}</h3>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border-luminous">
+            <h3 className="text-headline-sm text-on-surface">{title}</h3>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container hover:text-on-surface transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors"
             >
               <span className="material-symbols-outlined text-xl">close</span>
             </button>

@@ -13,7 +13,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={id} className="text-label-caps text-text-muted">
+          <label
+            htmlFor={id}
+            className="text-label-caps text-on-surface-variant uppercase tracking-widest"
+          >
             {label}
           </label>
         )}
@@ -21,19 +24,21 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full px-3 py-2 bg-surface-container-lowest border border-surface-border rounded-lg text-on-surface focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(173,199,255,0.1)] transition-all duration-150 text-body-sm appearance-none',
+            'bg-surface-container-low border border-border-luminous rounded-lg text-on-surface font-mono text-data-mono py-2 px-3 focus:outline-none focus:border-primary w-full appearance-none transition-all',
             error && 'border-error',
             className
           )}
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-surface-card">
+            <option key={opt.value} value={opt.value} className="bg-surface-container">
               {opt.label}
             </option>
           ))}
         </select>
-        {error && <span className="text-label-sm text-error">{error}</span>}
+        {error && (
+          <span className="text-label-caps text-error">{error}</span>
+        )}
       </div>
     )
   }
