@@ -20,22 +20,27 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {label}
           </label>
         )}
-        <select
-          ref={ref}
-          id={id}
-          className={cn(
-            'bg-surface-container-low border border-border-luminous rounded-lg text-on-surface font-mono text-data-mono py-2 px-3 focus:outline-none focus:border-primary w-full appearance-none transition-all',
-            error && 'border-error',
-            className
-          )}
-          {...props}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-surface-container">
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            ref={ref}
+            id={id}
+            className={cn(
+              'pt-input rounded-lg text-on-surface font-mono text-data-mono py-2.5 px-3 pr-9 w-full appearance-none transition-all',
+              error && 'border-error',
+              className
+            )}
+            {...props}
+          >
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-surface-container">
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-xl">
+            expand_more
+          </span>
+        </div>
         {error && (
           <span className="text-label-caps text-error">{error}</span>
         )}

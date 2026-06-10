@@ -589,7 +589,7 @@ export default function AlunoPage() {
                 <select
                   value={photoAngle}
                   onChange={(e) => setPhotoAngle(e.target.value)}
-                  className="bg-[#141414] border border-border rounded-md px-3 py-1.5 text-text-primary text-body-sm"
+                  className="bg-surface-container-low border border-border rounded-md px-3 py-1.5 text-text-primary text-body-sm"
                 >
                   <option value="frente">Frente</option>
                   <option value="costas">Costas</option>

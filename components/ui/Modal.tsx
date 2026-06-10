@@ -34,17 +34,16 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
       />
       <div
         className={cn(
-          'relative w-full bg-surface-glass backdrop-blur-2xl border border-border-luminous rounded-xl shadow-2xl',
+          'relative w-full glass-panel rounded-xl shadow-2xl',
           sizes[size]
         )}
-        style={{ backgroundColor: 'rgba(18,18,20,0.95)' }}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border-luminous">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-glass-stroke">
             <h3 className="text-headline-sm text-on-surface">{title}</h3>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-variant hover:text-on-surface transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-charcoal-surface hover:text-on-surface transition-colors"
             >
               <span className="material-symbols-outlined text-xl">close</span>
             </button>

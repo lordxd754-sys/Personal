@@ -19,9 +19,7 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-surface-glass backdrop-blur-xl border border-border-luminous rounded-full px-2 py-2 z-50"
-      style={{ backgroundColor: 'rgba(18,18,20,0.85)' }}
-    >
+    <nav className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 glass-panel rounded-full px-2 py-2 z-50">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
@@ -33,7 +31,7 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
             className={cn(
               'flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-150 active:scale-90 relative',
               isActive
-                ? 'bg-primary-container text-on-primary-container'
+                ? 'bg-performance-cyan/10 text-performance-cyan'
                 : 'text-on-surface-variant hover:text-on-surface'
             )}
           >

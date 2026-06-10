@@ -118,7 +118,7 @@ export default function PerfilPage() {
               <Input id="name" label="Nome completo" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               <div>
                 <label className="text-sm text-text-secondary block mb-1">E-mail (não editável)</label>
-                <p className="text-sm text-text-primary bg-[#141414] border border-border rounded-md px-3 py-2 opacity-60">{profile?.email}</p>
+                <p className="text-sm text-text-primary bg-surface-container-low border border-border rounded-md px-3 py-2 opacity-60">{profile?.email}</p>
               </div>
               <Input id="phone" label="Telefone público" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(11) 99999-9999" />
               <Textarea id="bio" label="Biografia profissional" value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} rows={4} placeholder="Conte sobre sua experiência, formação e metodologia..." />

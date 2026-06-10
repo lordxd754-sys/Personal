@@ -23,7 +23,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={id}
           className={cn(
-            'bg-transparent border border-border-luminous rounded-lg text-on-surface text-body-md p-3 focus:outline-none focus:border-primary w-full resize-none transition-all placeholder:text-text-muted',
+            'pt-input rounded-lg text-on-surface text-body-md p-3 w-full resize-none transition-all placeholder:text-text-muted',
             error && 'border-error',
             className
           )}

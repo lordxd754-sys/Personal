@@ -10,8 +10,8 @@ html {
 }
 
 body {
-  background-color: #131315;
-  color: #e5e1e4;
+  background-color: #131316;
+  color: #e4e1e6;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -28,34 +28,38 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0F0F12;
 }
 ::-webkit-scrollbar-thumb {
-  background: #424754;
+  background: #353438;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8c909f;
+  background: #47464b;
 }
 
-/* Elite Performance Design System */
+/* Elite Performance Reimagined Design System */
+
+/* Cards: charcoal surface with a subtle glass-stroke border */
 .bento-card {
-  background-color: #121214;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #1B1B1F;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .bento-card:hover {
-  box-shadow: 0 15px 40px -15px rgba(173, 198, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 15px 40px -15px rgba(0, 229, 255, 0.08);
 }
 
+/* Tactile tap feedback used by secondary buttons and nav CTAs */
 .tactile-btn {
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%), #2a2a2c;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%), #1f1f22;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .tactile-btn:hover {
-  box-shadow: 0 0 15px rgba(173, 198, 255, 0.2);
-  border-color: #adc6ff;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+  border-color: #00E5FF;
 }
 
 .ambient-glow {
@@ -69,19 +73,28 @@ body {
   transform: translateX(-50%);
   width: 80%;
   height: 40px;
-  background: radial-gradient(ellipse at center, rgba(173, 198, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(ellipse at center, rgba(0, 229, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
   z-index: -1;
   pointer-events: none;
 }
 
-.ghost-input {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  transition: all 0.2s;
+/* Inputs, selects & textareas: deep boxed field with cyan focus glow */
+.pt-input {
+  background-color: #0e0e11;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e4e1e6;
+  transition: all 0.2s ease;
 }
-.ghost-input:focus-within {
-  background-color: #121214;
-  border-color: #adc6ff;
-  border-radius: 0.5rem;
-  border-width: 1px;
+.pt-input:focus {
+  border-color: #00E5FF;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2);
+  outline: none;
+}
+
+/* Glassmorphism panel for modals, sticky footers and floating nav */
+.glass-panel {
+  background: rgba(27, 27, 31, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

@@ -19,18 +19,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <div className={cn('ghost-input', error && 'border-b-error')}>
-          <input
-            ref={ref}
-            id={id}
-            className={cn(
-              'bg-transparent border-b border-border-luminous text-on-surface font-mono text-data-mono focus:outline-none focus:border-primary transition-all py-2 w-full placeholder:text-text-muted',
-              error && 'border-b-error',
-              className
-            )}
-            {...props}
-          />
-        </div>
+        <input
+          ref={ref}
+          id={id}
+          className={cn(
+            'pt-input rounded-lg text-on-surface font-mono text-data-mono px-3 py-2.5 w-full placeholder:text-text-muted',
+            error && 'border-error',
+            className
+          )}
+          {...props}
+        />
         {error && (
           <span className="text-label-caps text-error">{error}</span>
         )}

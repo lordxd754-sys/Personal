@@ -7,12 +7,12 @@ interface BadgeProps {
 }
 
 const variantClasses = {
-  default: 'bg-surface-container text-text-muted border border-surface-border',
-  neutral: 'bg-surface-container text-text-muted border border-surface-border',
-  primary: 'bg-primary/20 text-primary border border-primary/30',
-  success: 'bg-success/10 text-success border border-success/20',
+  default: 'bg-charcoal-surface text-text-muted border border-glass-stroke',
+  neutral: 'bg-charcoal-surface text-text-muted border border-glass-stroke',
+  primary: 'bg-performance-cyan/10 text-performance-cyan border border-performance-cyan/30',
+  success: 'bg-success-emerald/10 text-success-emerald border border-success-emerald/20',
   warning: 'bg-warning/10 text-warning border border-warning/20',
-  error: 'bg-error/10 text-error border border-error/20',
+  error: 'bg-attention-coral/10 text-attention-coral border border-attention-coral/20',
   info: 'bg-secondary/10 text-secondary border border-secondary/20',
 }
 
