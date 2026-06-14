@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Providers from './providers'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 
 export const metadata: Metadata = {
   title: 'PT Manager',
@@ -13,7 +13,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const session = await getSession()
   return (
     <html lang="pt-BR">
       <body>

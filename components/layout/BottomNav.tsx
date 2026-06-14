@@ -3,20 +3,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { navItems } from '@/components/navigation/navItems'
 
-const mainItems = [
-  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { icon: 'groups', label: 'Alunos', href: '/alunos' },
-  { icon: 'fitness_center', label: 'Treinos', href: '/treinos' },
-  { icon: 'calendar_month', label: 'Agenda', href: '/agenda' },
-]
-
-const moreItems = [
-  { icon: 'menu_book', label: 'Exercícios', href: '/exercicios' },
-  { icon: 'monitoring', label: 'Acompanhamento', href: '/acompanhamento', badge: true },
-  { icon: 'settings', label: 'Configurações', href: '/configuracoes' },
-  { icon: 'person', label: 'Perfil', href: '/perfil' },
-]
+const mainItems = navItems.filter(item => ['/dashboard', '/alunos', '/treinos', '/agenda'].includes(item.href))
+const moreItems = navItems.filter(item => !mainItems.some(main => main.href === item.href))
 
 interface BottomNavProps {
   overdueCount?: number

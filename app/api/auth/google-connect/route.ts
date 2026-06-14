@@ -1,12 +1,12 @@
 import 'server-only'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import { google } from 'googleapis'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL('/login', req.url))
+    return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
   const redirectUri = `${process.env.NEXTAUTH_URL}/api/auth/google-connect/callback`

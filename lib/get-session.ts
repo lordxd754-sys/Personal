@@ -1,8 +1,20 @@
-import { auth } from './auth'
+import type { Session } from 'next-auth'
+
+export const AUTH_ENABLED = process.env.ENABLE_AUTH === 'true'
+
+const devSession: Session = {
+  user: {
+    id: 'dev',
+    email: process.env.DEV_USER_EMAIL || 'dev@ptmanager.local',
+    name: process.env.DEV_USER_NAME || 'Personal Trainer',
+  },
+  expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),
+}
 
 export async function getSession() {
-  if (process.env.DISABLE_AUTH === 'true') {
-    return { user: { id: 'dev', email: process.env.DEV_USER_EMAIL || 'dev@dev.com', name: 'Dev' } } as any
+  if (!AUTH_ENABLED) {
+    return devSession
   }
+  const { auth } = await import('./auth')
   return auth()
 }

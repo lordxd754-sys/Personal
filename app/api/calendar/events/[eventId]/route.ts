@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { updateCalendarEvent, deleteCalendarEvent } from '@/lib/google-calendar'
 
@@ -13,7 +13,7 @@ async function getTokens(userId: string) {
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { eventId: string } }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const tokens = await getTokens(session.user.id)
@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: { eventId: str
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { eventId: string } }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const tokens = await getTokens(session.user.id)

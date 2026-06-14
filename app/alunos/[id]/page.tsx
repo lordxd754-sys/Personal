@@ -457,7 +457,19 @@ export default function AlunoPage() {
               {/* Assessment cards */}
               {assessments.map((a) => {
                 const expanded = expandedAssessments.has(a.id)
-                const hasCircumferences = a.waistCm || a.hipCm || a.chestCm || a.armCm || a.thighCm || a.calfCm
+                const circumferences = [
+                  ['Braço (dir)', a.armRightCm ?? a.armCm],
+                  ['Braço (esq)', a.armLeftCm],
+                  ['Tórax', a.chestCm],
+                  ['Cintura', a.waistCm],
+                  ['Abdômen', a.abdomenCm],
+                  ['Quadril', a.hipCm],
+                  ['Coxa (dir)', a.thighRightCm ?? a.thighCm],
+                  ['Coxa (esq)', a.thighLeftCm],
+                  ['Panturrilha (dir)', a.calfRightCm ?? a.calfCm],
+                  ['Panturrilha (esq)', a.calfLeftCm],
+                ] as [string, number | null | undefined][]
+                const hasCircumferences = circumferences.some(([, value]) => value != null)
                 const hasDobras = a.triceps || a.subscapular || a.pectoral || a.midaxillary || a.suprailiac || a.abdominal || a.thigh
 
                 return (
@@ -472,6 +484,12 @@ export default function AlunoPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
+                        <Link href={`/avaliacoes/${a.id}/relatorio`}>
+                          <Button variant="secondary" size="sm">
+                            <span className="material-symbols-outlined text-base">description</span>
+                            Relatório
+                          </Button>
+                        </Link>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -549,14 +567,7 @@ export default function AlunoPage() {
                           <div>
                             <p className="text-label-sm text-text-secondary uppercase tracking-wide mb-3">Circunferências (cm)</p>
                             <div className="grid grid-cols-3 gap-2">
-                              {([
-                                ['Cintura', a.waistCm],
-                                ['Quadril', a.hipCm],
-                                ['Tórax', a.chestCm],
-                                ['Braço', a.armCm],
-                                ['Coxa', a.thighCm],
-                                ['Panturrilha', a.calfCm],
-                              ] as [string, number | null][]).filter(([, v]) => v != null).map(([label, value]) => (
+                              {circumferences.filter(([, v]) => v != null).map(([label, value]) => (
                                 <div key={label} className="bg-surface rounded-md p-2 text-center">
                                   <p className="text-xs text-text-secondary leading-tight">{label}</p>
                                   <p className="text-label-md text-text-primary font-semibold mt-0.5">{value} cm</p>

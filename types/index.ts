@@ -62,9 +62,16 @@ export interface PhysicalAssessment {
   waistCm: number | null
   hipCm: number | null
   chestCm: number | null
+  abdomenCm: number | null
   armCm: number | null
+  armRightCm: number | null
+  armLeftCm: number | null
   thighCm: number | null
+  thighRightCm: number | null
+  thighLeftCm: number | null
   calfCm: number | null
+  calfRightCm: number | null
+  calfLeftCm: number | null
   notes: string | null
   assessedAt: string
   createdAt: string

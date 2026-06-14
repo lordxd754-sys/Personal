@@ -50,12 +50,16 @@ const DOBRAS = [
 ]
 
 const CIRCUNFERENCIAS = [
-  { field: 'waistCm', label: 'Cintura (cm)' },
-  { field: 'hipCm', label: 'Quadril (cm)' },
-  { field: 'chestCm', label: 'Tórax (cm)' },
-  { field: 'armCm', label: 'Braço direito (cm)' },
-  { field: 'thighCm', label: 'Coxa direita (cm)' },
-  { field: 'calfCm', label: 'Panturrilha direita (cm)' },
+  { field: 'armRightCm', label: 'Braço (dir)' },
+  { field: 'armLeftCm', label: 'Braço (esq)' },
+  { field: 'chestCm', label: 'Tórax' },
+  { field: 'waistCm', label: 'Cintura' },
+  { field: 'abdomenCm', label: 'Abdômen' },
+  { field: 'hipCm', label: 'Quadril' },
+  { field: 'thighRightCm', label: 'Coxa (dir)' },
+  { field: 'thighLeftCm', label: 'Coxa (esq)' },
+  { field: 'calfRightCm', label: 'Panturrilha (dir)' },
+  { field: 'calfLeftCm', label: 'Panturrilha (esq)' },
 ]
 
 const COLOR_MAP = {
@@ -95,9 +99,13 @@ function NovaAvaliacaoForm() {
     waistCm: '',
     hipCm: '',
     chestCm: '',
-    armCm: '',
-    thighCm: '',
-    calfCm: '',
+    abdomenCm: '',
+    armRightCm: '',
+    armLeftCm: '',
+    thighRightCm: '',
+    thighLeftCm: '',
+    calfRightCm: '',
+    calfLeftCm: '',
     notes: '',
   })
 
@@ -164,9 +172,13 @@ function NovaAvaliacaoForm() {
       waistCm: parseFloat(form.waistCm) || null,
       hipCm: parseFloat(form.hipCm) || null,
       chestCm: parseFloat(form.chestCm) || null,
-      armCm: parseFloat(form.armCm) || null,
-      thighCm: parseFloat(form.thighCm) || null,
-      calfCm: parseFloat(form.calfCm) || null,
+      abdomenCm: parseFloat(form.abdomenCm) || null,
+      armRightCm: parseFloat(form.armRightCm) || null,
+      armLeftCm: parseFloat(form.armLeftCm) || null,
+      thighRightCm: parseFloat(form.thighRightCm) || null,
+      thighLeftCm: parseFloat(form.thighLeftCm) || null,
+      calfRightCm: parseFloat(form.calfRightCm) || null,
+      calfLeftCm: parseFloat(form.calfLeftCm) || null,
       notes: form.notes || null,
     }
 
@@ -296,9 +308,9 @@ function NovaAvaliacaoForm() {
               <Card>
                 <h2 className="text-title-sm text-text-primary mb-1">
                   Circunferências
-                  <span className="text-label-sm text-text-secondary font-normal ml-2">(opcional)</span>
+                  <span className="text-label-sm text-text-secondary font-normal ml-2">(cm, opcional)</span>
                 </h2>
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
                   {CIRCUNFERENCIAS.map(c => (
                     <Input
                       key={c.field}

@@ -149,17 +149,6 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      {/* Top bar (mobile) */}
-      <header className="md:hidden sticky top-0 z-40 flex justify-between items-center px-4 h-14 bg-surface-card/80 backdrop-blur-xl border-b border-surface-border">
-        <span className="text-headline-lg-mobile font-bold text-primary">PT Manager</span>
-        <div className="flex items-center gap-3">
-          <button className="text-primary"><span className="material-symbols-outlined">notifications</span></button>
-          <div className="w-8 h-8 rounded-full bg-surface-container border border-surface-border flex items-center justify-center">
-            <span className="material-symbols-outlined text-text-muted text-base">person</span>
-          </div>
-        </div>
-      </header>
-
       <div className="p-4 md:p-6 max-w-[1200px] mx-auto space-y-6 md:space-y-10">
         {/* Page header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2 md:mt-0">
@@ -167,10 +156,10 @@ export default function DashboardPage() {
             <h2 className="text-headline-lg-mobile md:text-headline-lg text-on-surface">Visão Geral</h2>
             <p className="text-body-sm text-text-muted mt-1">Bem-vindo de volta. Aqui está o resumo do seu dia.</p>
           </div>
-          <button className="self-start md:self-auto px-4 py-2 bg-surface-container rounded-lg border border-surface-border text-on-surface text-label-caps hover:bg-surface-container-high transition-colors flex items-center gap-2">
+          <Link href="/agenda" className="self-start md:self-auto px-4 py-2 bg-surface-container rounded-lg border border-surface-border text-on-surface text-label-caps hover:bg-surface-container-high transition-colors flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             Hoje
-          </button>
+          </Link>
         </div>
 
         {/* Metrics bento grid */}

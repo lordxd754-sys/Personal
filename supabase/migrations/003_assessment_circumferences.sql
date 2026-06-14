@@ -1,0 +1,24 @@
+ALTER TABLE "PhysicalAssessment"
+  ADD COLUMN IF NOT EXISTS "waistCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "hipCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "chestCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "abdomenCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "armCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "armRightCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "armLeftCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "thighCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "thighRightCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "thighLeftCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "calfCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "calfRightCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS "calfLeftCm" NUMERIC(5,2),
+  ADD COLUMN IF NOT EXISTS classification TEXT;
+
+UPDATE "PhysicalAssessment"
+SET
+  "armRightCm" = COALESCE("armRightCm", "armCm"),
+  "thighRightCm" = COALESCE("thighRightCm", "thighCm"),
+  "calfRightCm" = COALESCE("calfRightCm", "calfCm")
+WHERE "armCm" IS NOT NULL
+   OR "thighCm" IS NOT NULL
+   OR "calfCm" IS NOT NULL;
