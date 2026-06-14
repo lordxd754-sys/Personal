@@ -3,6 +3,7 @@ import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { calculateAssessment } from '@/lib/assessment'
 import { calculateBMI } from '@/lib/utils'
+import { errorMessage } from '@/lib/error-message'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
@@ -16,8 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (error) throw error
     return NextResponse.json(data)
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 })
   }
 }
 
@@ -61,49 +61,56 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       ? Math.round(calculateBMI(weight, height) * 10) / 10
       : null
 
+    const updateData = {
+      weight,
+      height,
+      age,
+      triceps: body.triceps ?? null,
+      subscapular: body.subscapular ?? null,
+      pectoral: body.pectoral ?? null,
+      midaxillary: body.midaxillary ?? null,
+      suprailiac: body.suprailiac ?? null,
+      abdominal: body.abdominal ?? null,
+      thigh: body.thigh ?? null,
+      bodyFatPercent,
+      leanMassKg,
+      fatMassKg,
+      bmi,
+      classification,
+      waistCm: body.waistCm ?? null,
+      hipCm: body.hipCm ?? null,
+      chestCm: body.chestCm ?? null,
+      abdomenCm: body.abdomenCm ?? null,
+      armCm: body.armRightCm ?? null,
+      thighCm: body.thighRightCm ?? null,
+      calfCm: body.calfRightCm ?? null,
+      armRightCm: body.armRightCm ?? null,
+      armLeftCm: body.armLeftCm ?? null,
+      thighRightCm: body.thighRightCm ?? null,
+      thighLeftCm: body.thighLeftCm ?? null,
+      calfRightCm: body.calfRightCm ?? null,
+      calfLeftCm: body.calfLeftCm ?? null,
+      notes: body.notes ?? null,
+      assessedAt: body.assessedAt || new Date().toISOString(),
+    }
+
     const { data, error } = await supabaseAdmin
       .from('PhysicalAssessment')
-      .update({
-        weight,
-        height,
-        age,
-        triceps: body.triceps ?? null,
-        subscapular: body.subscapular ?? null,
-        pectoral: body.pectoral ?? null,
-        midaxillary: body.midaxillary ?? null,
-        suprailiac: body.suprailiac ?? null,
-        abdominal: body.abdominal ?? null,
-        thigh: body.thigh ?? null,
-        bodyFatPercent,
-        leanMassKg,
-        fatMassKg,
-        bmi,
-        classification,
-        waistCm: body.waistCm ?? null,
-        hipCm: body.hipCm ?? null,
-        chestCm: body.chestCm ?? null,
-        abdomenCm: body.abdomenCm ?? null,
-        armCm: body.armRightCm ?? null,
-        thighCm: body.thighRightCm ?? null,
-        calfCm: body.calfRightCm ?? null,
-        armRightCm: body.armRightCm ?? null,
-        armLeftCm: body.armLeftCm ?? null,
-        thighRightCm: body.thighRightCm ?? null,
-        thighLeftCm: body.thighLeftCm ?? null,
-        calfRightCm: body.calfRightCm ?? null,
-        calfLeftCm: body.calfLeftCm ?? null,
-        notes: body.notes ?? null,
-        assessedAt: body.assessedAt || new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', params.id)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      const message = errorMessage(error)
+      if (message.includes('schema cache') || message.includes('column')) {
+        throw new Error(`${message}. Verifique se a migration supabase/migrations/003_assessment_circumferences.sql foi aplicada no Supabase.`)
+      }
+      throw error
+    }
     return NextResponse.json(data)
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 })
   }
 }
 
@@ -115,7 +122,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 })
   }
 }

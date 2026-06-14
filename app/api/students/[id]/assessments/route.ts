@@ -3,6 +3,7 @@ import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { calculateAssessment } from '@/lib/assessment'
 import { calculateBMI } from '@/lib/utils'
+import { errorMessage } from '@/lib/error-message'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
@@ -16,8 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (error) throw error
     return NextResponse.json(data || [])
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 })
   }
 }
 
@@ -97,10 +97,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      const message = errorMessage(error)
+      if (message.includes('schema cache') || message.includes('column')) {
+        throw new Error(`${message}. Verifique se a migration supabase/migrations/003_assessment_circumferences.sql foi aplicada no Supabase.`)
+      }
+      throw error
+    }
     return NextResponse.json(data, { status: 201 })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 })
   }
 }

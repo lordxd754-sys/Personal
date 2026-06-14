@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
 import Spinner from '@/components/ui/Spinner'
 import { calculateAssessment, classifyBMI } from '@/lib/assessment'
+import { errorMessage } from '@/lib/error-message'
 
 interface Student { id: string; name: string; birthdate: string | null }
 
@@ -189,10 +190,10 @@ function NovaAvaliacaoForm() {
         body: JSON.stringify(payload),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erro ao salvar')
+      if (!res.ok) throw new Error(errorMessage(data.error || data || 'Erro ao salvar'))
       router.push(`/alunos/${preselectedId}?tab=avaliacoes`)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(errorMessage(err))
       setSaving(false)
     }
   }

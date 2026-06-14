@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
 import Spinner from '@/components/ui/Spinner'
 import { calculateAssessment, classifyBMI } from '@/lib/assessment'
+import { errorMessage } from '@/lib/error-message'
 import type { PhysicalAssessment, Student } from '@/types'
 
 const DOBRAS = [
@@ -90,7 +91,7 @@ export default function EditarAvaliacaoPage() {
       try {
         const assessmentRes = await fetch(`/api/assessments/${assessmentId}`)
         const assessment: PhysicalAssessment = await assessmentRes.json()
-        if (!assessmentRes.ok) throw new Error((assessment as any).error || 'Erro ao carregar avaliação')
+        if (!assessmentRes.ok) throw new Error(errorMessage((assessment as { error?: unknown }).error || assessment || 'Erro ao carregar avaliação'))
         setStudentId(assessment.studentId)
         setForm({
           weight: toFormNumber(assessment.weight),
@@ -197,10 +198,10 @@ export default function EditarAvaliacaoPage() {
         body: JSON.stringify(payload),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erro ao salvar')
+      if (!res.ok) throw new Error(errorMessage(data.error || data || 'Erro ao salvar'))
       router.push(`/alunos/${studentId}?tab=avaliacoes`)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(errorMessage(err))
       setSaving(false)
     }
   }
