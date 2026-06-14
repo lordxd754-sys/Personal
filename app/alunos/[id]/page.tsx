@@ -484,6 +484,12 @@ export default function AlunoPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
+                        <Link href={`/avaliacoes/${a.id}/editar`}>
+                          <Button variant="secondary" size="sm">
+                            <span className="material-symbols-outlined text-base">edit</span>
+                            Editar
+                          </Button>
+                        </Link>
                         <Link href={`/avaliacoes/${a.id}/relatorio`}>
                           <Button variant="secondary" size="sm">
                             <span className="material-symbols-outlined text-base">description</span>
