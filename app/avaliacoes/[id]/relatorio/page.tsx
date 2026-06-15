@@ -51,6 +51,7 @@ export default function AssessmentReportPage() {
   const [assessment, setAssessment] = useState<PhysicalAssessment | null>(null)
   const [student, setStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -131,6 +132,146 @@ export default function AssessmentReportPage() {
     ['Panturrilha (esq)', assessment.calfLeftCm, ' cm'],
   ]
 
+  const reportSections: { title: string; items: [string, number | string | null | undefined, string?][] }[] = [
+    {
+      title: 'Dados básicos',
+      items: [
+        ['Peso', assessment.weight, ' kg'],
+        ['Altura', assessment.height, ' cm'],
+        ['Idade', assessment.age, ' anos'],
+        ['IMC', assessment.bmi],
+      ],
+    },
+    {
+      title: 'Composição corporal',
+      items: [
+        ['% Gordura corporal', assessment.bodyFatPercent, '%'],
+        ['Massa magra', assessment.leanMassKg, ' kg'],
+        ['Massa gorda', assessment.fatMassKg, ' kg'],
+        ['Soma das 7 dobras', sumSkinfolds, ' mm'],
+      ],
+    },
+    {
+      title: '7 dobras cutâneas',
+      items: [
+        ['Tríceps', assessment.triceps, ' mm'],
+        ['Subescapular', assessment.subscapular, ' mm'],
+        ['Peitoral', assessment.pectoral, ' mm'],
+        ['Axilar média', assessment.midaxillary, ' mm'],
+        ['Supra-ilíaca', assessment.suprailiac, ' mm'],
+        ['Abdominal', assessment.abdominal, ' mm'],
+        ['Coxa', assessment.thigh, ' mm'],
+      ],
+    },
+    {
+      title: 'Circunferências',
+      items: circumferences,
+    },
+  ]
+
+  async function downloadPdf() {
+    if (!assessment) return
+    const currentAssessment = assessment
+    setGeneratingPdf(true)
+    try {
+      const { default: jsPDF } = await import('jspdf')
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 16
+      const contentWidth = pageWidth - margin * 2
+      const studentName = student?.name || 'Aluno'
+      let y = 18
+
+      const ensureSpace = (height: number) => {
+        if (y + height <= pageHeight - margin) return
+        pdf.addPage()
+        y = 18
+      }
+
+      const drawSection = (
+        title: string,
+        items: [string, number | string | null | undefined, string?][],
+      ) => {
+        ensureSpace(22)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(13)
+        pdf.setTextColor(18, 24, 38)
+        pdf.text(title, margin, y)
+        y += 7
+
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
+        pdf.setTextColor(68, 76, 91)
+
+        items.forEach(([label, itemValue, suffix]) => {
+          ensureSpace(7)
+          pdf.text(`${label}:`, margin, y)
+          pdf.setFont('helvetica', 'bold')
+          pdf.setTextColor(18, 24, 38)
+          pdf.text(value(itemValue, suffix), margin + 48, y)
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(68, 76, 91)
+          y += 6
+        })
+
+        y += 5
+      }
+
+      pdf.setFillColor(10, 14, 20)
+      pdf.rect(0, 0, pageWidth, 42, 'F')
+      pdf.setTextColor(255, 255, 255)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(18)
+      pdf.text('Relatório da Avaliação Física', margin, 18)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.text(studentName, margin, 27)
+      pdf.text(`Avaliação realizada em ${formatDate(currentAssessment.assessedAt)}`, margin, 34)
+
+      if (currentAssessment.classification) {
+        pdf.setFillColor(230, 244, 255)
+        pdf.roundedRect(pageWidth - margin - 46, 15, 46, 10, 2, 2, 'F')
+        pdf.setTextColor(10, 95, 160)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(9)
+        pdf.text(currentAssessment.classification, pageWidth - margin - 43, 21.5, { maxWidth: 40 })
+      }
+
+      y = 54
+      reportSections.forEach(section => drawSection(section.title, section.items))
+
+      ensureSpace(20)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(13)
+      pdf.setTextColor(18, 24, 38)
+      pdf.text('Observações', margin, y)
+      y += 7
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(10)
+      pdf.setTextColor(68, 76, 91)
+      const notes = pdf.splitTextToSize(currentAssessment.notes || 'Sem observações registradas.', contentWidth)
+      notes.forEach((line: string) => {
+        ensureSpace(6)
+        pdf.text(line, margin, y)
+        y += 5
+      })
+
+      const filenameStudent = studentName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .toLowerCase()
+      const filenameDate = new Date(currentAssessment.assessedAt).toISOString().split('T')[0]
+      pdf.save(`avaliacao-fisica-${filenameStudent || 'aluno'}-${filenameDate}.pdf`)
+    } catch {
+      setError('Não foi possível gerar o PDF. Tente novamente.')
+    } finally {
+      setGeneratingPdf(false)
+    }
+  }
+
   return (
     <AppLayout>
       <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5 print:p-0 print:max-w-none">
@@ -148,9 +289,9 @@ export default function AssessmentReportPage() {
               <span className="material-symbols-outlined text-base">arrow_back</span>
               Voltar
             </Button>
-            <Button onClick={() => window.print()}>
-              <span className="material-symbols-outlined text-base">print</span>
-              Imprimir
+            <Button onClick={downloadPdf} loading={generatingPdf}>
+              <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+              Importar PDF
             </Button>
           </div>
         </div>
@@ -172,40 +313,9 @@ export default function AssessmentReportPage() {
           </div>
         </Card>
 
-        <ReportSection
-          title="Dados básicos"
-          items={[
-            ['Peso', assessment.weight, ' kg'],
-            ['Altura', assessment.height, ' cm'],
-            ['Idade', assessment.age, ' anos'],
-            ['IMC', assessment.bmi],
-          ]}
-        />
-
-        <ReportSection
-          title="Composição corporal"
-          items={[
-            ['% Gordura corporal', assessment.bodyFatPercent, '%'],
-            ['Massa magra', assessment.leanMassKg, ' kg'],
-            ['Massa gorda', assessment.fatMassKg, ' kg'],
-            ['Soma das 7 dobras', sumSkinfolds, ' mm'],
-          ]}
-        />
-
-        <ReportSection
-          title="7 dobras cutâneas"
-          items={[
-            ['Tríceps', assessment.triceps, ' mm'],
-            ['Subescapular', assessment.subscapular, ' mm'],
-            ['Peitoral', assessment.pectoral, ' mm'],
-            ['Axilar média', assessment.midaxillary, ' mm'],
-            ['Supra-ilíaca', assessment.suprailiac, ' mm'],
-            ['Abdominal', assessment.abdominal, ' mm'],
-            ['Coxa', assessment.thigh, ' mm'],
-          ]}
-        />
-
-        <ReportSection title="Circunferências" items={circumferences} />
+        {reportSections.map(section => (
+          <ReportSection key={section.title} title={section.title} items={section.items} />
+        ))}
 
         <Card className="break-inside-avoid">
           <h2 className="text-title-md text-text-primary mb-3">Observações</h2>
