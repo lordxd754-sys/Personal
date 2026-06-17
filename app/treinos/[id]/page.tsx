@@ -50,6 +50,7 @@ export default function TreinoEditorPage() {
   const [workout, setWorkout] = useState<WorkoutData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [copyText, setCopyText] = useState('')
   const [showExerciseModal, setShowExerciseModal] = useState(false)
@@ -156,6 +157,30 @@ export default function TreinoEditorPage() {
     if (newStatus) await loadWorkout()
   }
 
+  async function handleDeleteWorkout() {
+    if (deleting) return
+    const confirmed = confirm(`Excluir o treino "${title || workout?.title || 'sem título'}"? Essa ação não pode ser desfeita.`)
+    if (!confirmed) return
+
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/workouts/${workoutId}`, { method: 'DELETE' })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        alert(data?.error || 'Não foi possível excluir o treino.')
+        setDeleting(false)
+        return
+      }
+
+      router.push('/treinos')
+      router.refresh()
+    } catch {
+      alert('Não foi possível excluir o treino. Verifique sua conexão e tente novamente.')
+      setDeleting(false)
+    }
+  }
+
   async function handleMfitCheck(checked: boolean) {
     setMfitChecked(checked)
     if (checked) {
@@ -249,8 +274,8 @@ export default function TreinoEditorPage() {
     <AppLayout>
       <div className="p-4 lg:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
             <button onClick={() => router.back()} className="text-text-secondary hover:text-text-primary">
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
@@ -261,13 +286,24 @@ export default function TreinoEditorPage() {
               placeholder="Título do treino"
             />
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Button variant="secondary" size="sm" onClick={() => handleSave()} loading={saving}>
+          <div className="flex flex-wrap gap-2 shrink-0 justify-end w-full sm:w-auto">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDeleteWorkout}
+              loading={deleting}
+              disabled={saving || generating}
+              title="Excluir treino"
+            >
+              <span className="material-symbols-outlined text-sm">delete</span>
+              Excluir
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => handleSave()} loading={saving} disabled={deleting}>
               <span className="material-symbols-outlined text-sm">save</span>
               Salvar
             </Button>
             {workout.status !== 'aprovado' && workout.status !== 'enviado_mfit' && (
-              <Button size="sm" onClick={() => handleSave('aprovado')} loading={saving}>
+              <Button size="sm" onClick={() => handleSave('aprovado')} loading={saving} disabled={deleting}>
                 <span className="material-symbols-outlined text-sm">check_circle</span>
                 Aprovar
               </Button>
