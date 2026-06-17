@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
-  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.email) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const { data, error } = await supabaseAdmin
       .from('User')
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const session = await getSession()
-  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.email) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const body = await request.json() as Record<string, unknown>
     const { password, ...profileData } = body

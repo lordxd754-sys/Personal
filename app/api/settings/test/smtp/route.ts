@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const { smtpHost, smtpPort, smtpUser, smtpPass } = await request.json() as {
       smtpHost: string

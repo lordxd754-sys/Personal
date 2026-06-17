@@ -46,7 +46,7 @@ async function updateAssessment(id: string, updateData: Record<string, unknown>)
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const { data, error } = await supabaseAdmin
       .from('PhysicalAssessment')
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const body = await request.json()
     const { weight, height, age } = body
@@ -148,7 +148,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const { error } = await supabaseAdmin.from('PhysicalAssessment').delete().eq('id', params.id)
     if (error) throw error

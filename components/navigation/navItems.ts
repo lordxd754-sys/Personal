@@ -1,5 +1,5 @@
 export const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { icon: 'dashboard', label: 'Painel', href: '/dashboard' },
   { icon: 'groups', label: 'Alunos', href: '/alunos' },
   { icon: 'fitness_center', label: 'Treinos', href: '/treinos' },
   { icon: 'menu_book', label: 'Exercícios', href: '/exercicios' },

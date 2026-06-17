@@ -8,7 +8,7 @@ export default function GlobalError({
   reset: () => void
 }) {
   return (
-    <html>
+    <html lang="pt-BR">
       <body style={{ margin: 0, padding: 32, fontFamily: 'monospace', color: '#fff', background: '#0a0a0a', minHeight: '100vh' }}>
         <h2 style={{ color: '#ef4444', marginBottom: 16 }}>Erro global</h2>
         <pre style={{ background: '#1a1a1a', padding: 16, borderRadius: 8, whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 13 }}>

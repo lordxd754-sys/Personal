@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   try {
     const body = await request.json() as Record<string, unknown>
     const { setLogs, ...executionData } = body

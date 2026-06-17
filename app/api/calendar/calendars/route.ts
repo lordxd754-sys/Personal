@@ -5,7 +5,7 @@ import { listCalendars } from '@/lib/google-calendar'
 
 export async function GET() {
   const session = await getSession()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { data } = await supabaseAdmin
     .from('GoogleToken')

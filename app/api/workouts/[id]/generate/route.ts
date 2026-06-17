@@ -51,7 +51,7 @@ Formato JSON obrigatório:
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey || apiKey === 'placeholder_gemini_key') {

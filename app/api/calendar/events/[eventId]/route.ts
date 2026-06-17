@@ -14,7 +14,7 @@ async function getTokens(userId: string) {
 
 export async function PUT(req: NextRequest, { params }: { params: { eventId: string } }) {
   const session = await getSession()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const tokens = await getTokens(session.user.id)
   if (!tokens) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })
@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: { eventId: str
 
 export async function DELETE(_req: NextRequest, { params }: { params: { eventId: string } }) {
   const session = await getSession()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const tokens = await getTokens(session.user.id)
   if (!tokens) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })

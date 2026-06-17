@@ -14,7 +14,7 @@ async function getTokens(userId: string) {
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const start = searchParams.get('start')
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const tokens = await getTokens(session.user.id)
   if (!tokens) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })
