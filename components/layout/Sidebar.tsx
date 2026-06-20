@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { navItems } from '@/components/navigation/navItems'
@@ -77,14 +78,14 @@ export default function Sidebar({ overdueCount = 0, mobileOpen = false, onMobile
           <span className="material-symbols-outlined text-xl">help</span>
           <span>Suporte</span>
         </Link>
-        <Link
-          href="/login"
-          onClick={closeOnNavigate ? onMobileClose : undefined}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-label-caps text-text-muted hover:bg-surface-container hover:text-on-surface transition-all duration-150"
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-label-caps text-text-muted hover:bg-surface-container hover:text-on-surface transition-all duration-150"
         >
           <span className="material-symbols-outlined text-xl">logout</span>
           <span>Sair</span>
-        </Link>
+        </button>
       </div>
     </>
   )

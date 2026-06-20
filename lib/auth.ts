@@ -3,8 +3,28 @@ import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { supabaseAdmin } from './supabase'
+import { normalizeEmail, isValidEmail } from './auth-validation'
+
+const LOGIN_RATE_LIMIT_WINDOW_MS = 60_000
+const LOGIN_RATE_LIMIT_MAX = 10
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+
+function isLoginRateLimited(email: string) {
+  const now = Date.now()
+  const current = loginAttempts.get(email)
+
+  if (!current || current.resetAt < now) {
+    loginAttempts.set(email, { count: 1, resetAt: now + LOGIN_RATE_LIMIT_WINDOW_MS })
+    return false
+  }
+
+  current.count += 1
+  loginAttempts.set(email, current)
+  return current.count > LOGIN_RATE_LIMIT_MAX
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: process.env.AUTH_TRUST_HOST === 'true',
   providers: [
     Credentials({
       name: 'credentials',
@@ -13,22 +33,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        const email = typeof credentials?.email === 'string' ? normalizeEmail(credentials.email) : ''
+        const password = typeof credentials?.password === 'string' ? credentials.password : ''
+
+        if (!email || !password || !isValidEmail(email) || password.length > 128) return null
+        if (isLoginRateLimited(email)) return null
 
         try {
           const { data: users, error } = await supabaseAdmin
             .from('User')
-            .select('*')
-            .eq('email', credentials.email)
+            .select('id,email,name,password')
+            .eq('email', email)
             .limit(1)
 
           if (error || !users || users.length === 0) return null
 
-          const user = users[0]
-          const passwordMatch = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          )
+          const user = users[0] as { id: string; email: string; name: string | null; password: string | null }
+          if (!user.password) return null
+
+          const passwordMatch = await bcrypt.compare(password, user.password)
 
           if (!passwordMatch) return null
 
@@ -43,9 +66,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
 
-    ...(process.env.GOOGLE_CLIENT_ID ? [Google({
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           scope: [
@@ -68,6 +91,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   session: {
     strategy: 'jwt',
+    maxAge: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
 
   callbacks: {
