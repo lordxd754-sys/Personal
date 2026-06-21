@@ -18,18 +18,25 @@ async function main() {
   console.log('🌱 Starting seed...')
 
   // 1. Admin user
-  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@ptmanager.com'
+  const adminPassword = process.env.ADMIN_PASSWORD
+
+  if (!adminPassword || adminPassword.length < 10) {
+    throw new Error('Defina ADMIN_PASSWORD com pelo menos 10 caracteres para rodar o seed com segurança.')
+  }
+
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
   const userId = id()
   await supabase.from('User').upsert({
     id: userId,
-    name: 'Personal Trainer',
-    email: 'admin@ptmanager.com',
+    name: process.env.ADMIN_NAME || 'Personal Trainer',
+    email: adminEmail.toLowerCase(),
     password: hashedPassword,
     specialties: ['Hipertrofia', 'Emagrecimento', 'Reabilitação'],
     bio: 'Personal trainer com 10 anos de experiência. Especialista em hipertrofia e recomposição corporal.',
     createdAt: new Date().toISOString(),
   }, { onConflict: 'email' })
-  console.log('✅ Admin user created: admin@ptmanager.com / admin123')
+  console.log(`✅ Admin user created/updated: ${adminEmail.toLowerCase()}`)
 
   // 2. Students
   const now = new Date()
