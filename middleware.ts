@@ -26,6 +26,7 @@ export default async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    secureCookie: req.nextUrl.protocol === 'https:',
   })
 
   const isPublicPath = PUBLIC_PATHS.has(pathname)
