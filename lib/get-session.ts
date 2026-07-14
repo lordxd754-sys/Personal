@@ -1,6 +1,6 @@
 import type { Session } from 'next-auth'
 
-export const AUTH_ENABLED = process.env.ENABLE_AUTH === 'true'
+export const AUTH_ENABLED = process.env.ENABLE_AUTH === 'true' && process.env.DISABLE_AUTH !== 'true'
 
 const devSession: Session = {
   user: {
