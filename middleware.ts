@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { isSafeRedirectPath } from '@/lib/auth-validation'
 
-const AUTH_ENABLED = process.env.ENABLE_AUTH !== 'false'
+const AUTH_ENABLED = process.env.ENABLE_AUTH === 'true'
 const PUBLIC_PATHS = new Set(['/login', '/register'])
 
 function withSecurityHeaders(response: NextResponse) {
