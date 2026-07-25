@@ -57,7 +57,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             )}
           </div>
-          <span className="text-label-caps font-bold text-primary">Orquestra</span>
+          <div className="flex items-center gap-2">
+            <img
+              src="/orquestra-mark.png"
+              alt="Orquestra"
+              className="w-8 h-8 rounded-lg object-cover border border-primary/30"
+            />
+            <span className="text-label-caps font-bold text-primary">Orquestra</span>
+          </div>
           <button
             type="button"
             onClick={() => router.push('/perfil')}

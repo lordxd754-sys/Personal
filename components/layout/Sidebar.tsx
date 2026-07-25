@@ -17,11 +17,11 @@ export default function Sidebar({ overdueCount = 0, mobileOpen = false, onMobile
   const content = (closeOnNavigate = false) => (
     <>
       <div className="flex items-center gap-3 px-4 pt-5 pb-4">
-        <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>
-            fitness_center
-          </span>
-        </div>
+        <img
+          src="/orquestra-mark.png"
+          alt="Orquestra"
+          className="w-11 h-11 rounded-xl object-cover border border-primary/30 shrink-0"
+        />
         <div>
           <h1 className="text-[20px] leading-tight text-primary font-bold">Orquestra</h1>
           <p className="text-label-caps text-text-muted">Performance Premium</p>
