@@ -32,14 +32,14 @@ const TYPE_OPTIONS = [
 ]
 
 const muscleGroupColors: Record<string, string> = {
-  Peito: 'bg-blue-500/10 text-blue-400',
-  Costas: 'bg-green-500/10 text-green-400',
-  Pernas: 'bg-orange-500/10 text-orange-400',
-  Ombro: 'bg-purple-500/10 text-purple-400',
-  Braços: 'bg-yellow-500/10 text-yellow-400',
-  Abdominais: 'bg-red-500/10 text-red-400',
-  Glúteos: 'bg-pink-500/10 text-pink-400',
-  Cardio: 'bg-cyan-500/10 text-cyan-400',
+  Peito: 'bg-primary-container/15 text-primary border-primary-container/25',
+  Costas: 'bg-success/10 text-success border-success/20',
+  Pernas: 'bg-secondary/15 text-secondary border-secondary/25',
+  Ombro: 'bg-primary/10 text-primary border-primary/20',
+  Braços: 'bg-warning/10 text-warning border-warning/20',
+  Abdominais: 'bg-error/10 text-error border-error/20',
+  Glúteos: 'bg-primary-container/15 text-primary border-primary-container/25',
+  Cardio: 'bg-white/[0.04] text-on-surface border-white/10',
 }
 
 export default function ExerciciosPage() {
@@ -69,11 +69,11 @@ export default function ExerciciosPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+      <div className="p-4 md:p-12 max-w-[1440px] mx-auto">
+        <div className="flex items-end justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-text-primary">Exercícios</h1>
-            <p className="text-sm text-text-secondary mt-1">{exercises.length} exercício{exercises.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-headline-lg-mobile md:text-display-lg text-text-primary">Exercícios</h1>
+            <p className="text-body-md text-on-surface-variant mt-2">{exercises.length} exercício{exercises.length !== 1 ? 's' : ''}</p>
           </div>
           <Link href="/exercicios/novo">
             <Button>
@@ -84,15 +84,15 @@ export default function ExerciciosPage() {
         </div>
 
         {/* Muscle group chips */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-2 border-b border-white/5">
           {MUSCLE_GROUPS.map(mg => (
             <button
               key={mg}
               onClick={() => setMuscleGroup(mg)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-5 py-2 border-b-2 font-mono text-label-caps font-semibold whitespace-nowrap transition-colors ${
                 muscleGroup === mg
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-surface-high'
+                  ? 'border-primary-container text-primary'
+                  : 'border-transparent text-text-secondary hover:text-text-primary'
               }`}
             >
               {mg}
@@ -101,7 +101,7 @@ export default function ExerciciosPage() {
         </div>
 
         {/* Secondary filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="flex-1">
             <Input placeholder="Buscar exercício..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
@@ -122,14 +122,14 @@ export default function ExerciciosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {exercises.map(ex => (
               <Link key={ex.id} href={`/exercicios/${ex.id}`}>
-                <Card className="hover:border-primary/30 transition-colors cursor-pointer p-4 h-full">
+                <Card className="hover:border-primary-container/40 hover:shadow-[0_0_18px_rgba(124,58,237,0.14)] transition-all cursor-pointer p-5 h-full">
                   <div className="flex items-start justify-between mb-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${muscleGroupColors[ex.muscleGroup] ?? 'bg-surface-high text-text-secondary'}`}>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full border font-mono text-[10px] font-semibold uppercase ${muscleGroupColors[ex.muscleGroup] ?? 'bg-surface-high text-text-secondary border-white/10'}`}>
                       {ex.muscleGroup}
                     </span>
                     {ex.isCustom && <Badge variant="info" className="text-xs">Custom</Badge>}
                   </div>
-                  <h3 className="text-sm font-medium text-text-primary mb-2 line-clamp-2">{ex.name}</h3>
+                  <h3 className="text-title-md text-text-primary mb-3 line-clamp-2">{ex.name}</h3>
                   <div className="flex flex-wrap gap-1 mt-auto">
                     {ex.equipment && <Badge variant="neutral" className="text-xs">{ex.equipment}</Badge>}
                     {ex.level && <Badge variant="neutral" className="text-xs">{ex.level}</Badge>}

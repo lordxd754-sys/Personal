@@ -8,13 +8,13 @@ import type { Student } from '@/types'
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    ativo: 'bg-success/10 text-success border-success/20',
+    ativo: 'bg-secondary/20 text-secondary border-secondary/20',
     pausado: 'bg-warning/10 text-warning border-warning/20',
-    inativo: 'bg-surface-container text-text-muted border-surface-border',
+    inativo: 'bg-white/[0.04] text-text-muted border-white/10',
   }
   const labels: Record<string, string> = { ativo: 'Ativo', pausado: 'Pausado', inativo: 'Inativo' }
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-semibold border ${styles[status] || styles.inativo}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-label-sm font-semibold uppercase border ${styles[status] || styles.inativo}`}>
       {labels[status] || status}
     </span>
   )
@@ -45,24 +45,24 @@ export default function AlunosPage() {
   return (
     <AppLayout>
       {/* Mobile top bar */}
-      <header className="md:hidden sticky top-0 z-40 flex items-center px-4 h-14 bg-surface-card/80 backdrop-blur-xl border-b border-surface-border">
+      <header className="md:hidden sticky top-0 z-40 flex items-center px-4 h-14 bg-surface/70 backdrop-blur-xl border-b border-white/10">
         <span className="text-headline-lg-mobile font-bold text-on-surface flex-1">Alunos</span>
         <Link href="/alunos/novo">
-          <button className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container">
+          <button className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary">
             <span className="material-symbols-outlined">add</span>
           </button>
         </Link>
       </header>
 
-      <div className="p-4 md:p-6 max-w-[1200px] mx-auto space-y-6">
+      <div className="p-4 md:p-12 max-w-[1440px] mx-auto space-y-8">
         {/* Desktop header */}
         <div className="hidden md:flex items-end justify-between mt-2">
           <div>
-            <h2 className="text-headline-lg text-on-surface">Alunos</h2>
-            <p className="text-body-sm text-text-muted mt-1">Gerencie seus clientes e acompanhe o progresso.</p>
+            <h2 className="text-display-lg text-on-surface">Alunos</h2>
+            <p className="text-body-md text-on-surface-variant mt-2">Gerencie seus clientes e acompanhe o progresso.</p>
           </div>
           <Link href="/alunos/novo">
-            <button className="bg-primary text-on-primary-container font-semibold text-label-caps px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dim transition-colors active:scale-95">
+            <button className="bg-secondary text-on-secondary font-mono font-semibold text-label-caps px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-secondary-container hover:text-on-secondary-container transition-all active:scale-95 shadow-[0_0_18px_rgba(233,195,73,0.10)]">
               <span className="material-symbols-outlined text-[18px]">add</span>
               Novo Aluno
             </button>
@@ -74,13 +74,13 @@ export default function AlunosPage() {
           <div className="relative flex-1">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[20px]">search</span>
             <input
-              className="w-full pl-10 pr-4 py-2.5 bg-surface-container border border-surface-border rounded-lg text-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(173,199,255,0.1)] transition-all text-body-sm"
+              className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary-container focus:shadow-[0_0_0_2px_rgba(124,58,237,0.18)] transition-all text-body-sm"
               placeholder="Buscar aluno por nome..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {([
               ['todos', `Todos (${students.length})`],
               ['ativo', `Ativos (${activeCount})`],
@@ -89,10 +89,10 @@ export default function AlunosPage() {
               <button
                 key={value}
                 onClick={() => setTab(value)}
-                className={`px-4 py-2 rounded-full text-label-caps font-semibold transition-all duration-150 ${
+                className={`px-5 py-2 border-b-2 font-mono text-label-caps font-semibold whitespace-nowrap transition-all duration-150 ${
                   tab === value
-                    ? 'bg-primary-container text-on-primary-container'
-                    : 'bg-surface-container border border-surface-border text-text-muted hover:text-on-surface'
+                    ? 'border-primary-container text-primary'
+                    : 'border-transparent text-text-muted hover:text-on-surface'
                 }`}
               >
                 {label}
@@ -114,7 +114,7 @@ export default function AlunosPage() {
               {search ? 'Tente uma busca diferente' : 'Adicione seu primeiro aluno para começar'}
             </p>
             <Link href="/alunos/novo">
-              <button className="bg-primary text-on-primary-container font-semibold text-label-caps px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-dim transition-colors">
+              <button className="bg-secondary text-on-secondary font-mono font-semibold text-label-caps px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-secondary-container transition-colors">
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 Adicionar Aluno
               </button>
@@ -122,7 +122,7 @@ export default function AlunosPage() {
           </div>
         ) : (
           /* Card grid — 3 cols desktop, 1 col mobile */
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {students.map(student => {
               const days = daysSince(student.lastContactAt)
               const isInactive = student.status === 'inativo'
@@ -130,18 +130,18 @@ export default function AlunosPage() {
                 <Link
                   key={student.id}
                   href={`/alunos/${student.id}`}
-                  className={`bg-surface-card border rounded-xl p-5 flex flex-col gap-4 hover:border-primary/40 transition-colors duration-150 group cursor-pointer ${
+                  className={`bg-surface-card backdrop-blur-xl border rounded-lg p-6 flex flex-col gap-4 hover:border-primary-container/40 hover:shadow-[0_0_18px_rgba(124,58,237,0.16)] transition-all duration-200 group cursor-pointer ${
                     isInactive ? 'border-surface-border opacity-70' : 'border-surface-border'
                   }`}
                 >
                   {/* Card header */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-label-sm shrink-0">
+                      <div className="w-14 h-14 rounded-full bg-primary-container/10 border border-primary-container/30 flex items-center justify-center text-primary font-bold text-title-md shrink-0 group-hover:border-primary-container transition-colors">
                         {getInitials(student.name)}
                       </div>
                       <div>
-                        <p className="text-label-md text-on-surface font-semibold">{student.name}</p>
+                        <p className="text-title-md text-on-surface font-semibold">{student.name}</p>
                         <StatusBadge status={student.status} />
                       </div>
                     </div>
@@ -153,14 +153,14 @@ export default function AlunosPage() {
                   {/* Meta */}
                   <div className="grid grid-cols-2 gap-3 text-body-sm">
                     <div>
-                      <p className="text-text-muted text-label-sm mb-0.5">Último contato</p>
-                      <p className="text-on-surface font-medium">
+                      <p className="font-mono text-text-muted text-[10px] uppercase mb-0.5">Último contato</p>
+                      <p className="font-mono text-on-surface text-label-sm">
                         {days === 0 ? 'Hoje' : days === 1 ? 'Ontem' : days < 999 ? `Há ${days} dias` : 'Nunca'}
                       </p>
                     </div>
                     <div>
-                      <p className="text-text-muted text-label-sm mb-0.5">Objetivo</p>
-                      <p className="text-on-surface font-medium truncate">{student.goal || '—'}</p>
+                      <p className="font-mono text-text-muted text-[10px] uppercase mb-0.5">Objetivo</p>
+                      <p className="font-mono text-on-surface text-label-sm truncate">{student.goal || '—'}</p>
                     </div>
                   </div>
                 </Link>

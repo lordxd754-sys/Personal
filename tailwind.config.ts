@@ -9,61 +9,67 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base surfaces
-        background: '#111317',
-        surface: '#18181B',
-        'surface-card': '#18181B',
-        'surface-high': '#282a2e',
-        'surface-container': '#1e2024',
-        'surface-container-high': '#282a2e',
-        'surface-container-low': '#1a1c20',
-        'surface-container-lowest': '#0c0e12',
+        // Premium Royal surfaces
+        background: '#000000',
+        surface: '#131313',
+        'surface-card': 'rgba(28, 27, 27, 0.68)',
+        'surface-high': '#2a2a2a',
+        'surface-container': '#201f1f',
+        'surface-container-high': '#2a2a2a',
+        'surface-container-low': '#1c1b1b',
+        'surface-container-lowest': '#0e0e0e',
+        'surface-container-highest': '#353534',
+        'surface-bright': '#3a3939',
+        'surface-variant': '#353534',
 
         // Borders
-        border: '#27272A',
-        'surface-border': '#27272A',
-        'outline': '#8b90a0',
-        'outline-variant': '#414754',
+        border: 'rgba(255, 255, 255, 0.08)',
+        'surface-border': 'rgba(255, 255, 255, 0.08)',
+        outline: '#958da1',
+        'outline-variant': '#4a4455',
 
-        // Primary (Electric Blue)
-        primary: '#adc7ff',
-        'primary-dim': '#4a8eff',
-        'primary-container': '#4a8eff',
-        'on-primary': '#002e68',
-        'on-primary-container': '#00285b',
+        // Primary (Royal Purple)
+        primary: '#d2bbff',
+        'primary-dim': '#b991ff',
+        'primary-container': '#7c3aed',
+        'on-primary': '#3f008e',
+        'on-primary-container': '#ede0ff',
 
-        // Secondary (Cyan)
-        secondary: '#a2e7ff',
-        'secondary-container': '#00d2fd',
-        'on-secondary': '#003642',
+        // Secondary (Metallic Gold)
+        secondary: '#e9c349',
+        'secondary-container': '#af8d11',
+        'on-secondary': '#3c2f00',
+        'on-secondary-container': '#342800',
 
         // Text
-        'on-surface': '#e2e2e8',
-        'on-surface-variant': '#c1c6d7',
-        'text-primary': '#e2e2e8',
-        'text-secondary': '#8b90a0',
-        'text-muted': '#8b90a0',
+        'on-surface': '#e5e2e1',
+        'on-surface-variant': '#ccc3d8',
+        'text-primary': '#e5e2e1',
+        'text-secondary': '#ccc3d8',
+        'text-muted': '#958da1',
 
         // Status
-        error: '#EF4444',
-        danger: '#EF4444',
-        warning: '#F59E0B',
-        success: '#10B981',
+        error: '#ffb4ab',
+        'on-error': '#690005',
+        danger: '#ffb4ab',
+        warning: '#e9c349',
+        success: '#6ee7b7',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Hanken Grotesk', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {
-        sm: '4px',
+        sm: '2px',
         DEFAULT: '4px',
-        md: '8px',
-        lg: '12px',
-        xl: '16px',
+        md: '6px',
+        lg: '8px',
+        xl: '12px',
         full: '9999px',
       },
       fontSize: {
-        'display-lg': ['48px', { fontWeight: '700', lineHeight: '56px', letterSpacing: '-0.02em' }],
-        'headline-lg': ['32px', { fontWeight: '600', lineHeight: '40px', letterSpacing: '-0.01em' }],
+        'display-lg': ['48px', { fontWeight: '700', lineHeight: '56px', letterSpacing: '0' }],
+        'headline-lg': ['32px', { fontWeight: '600', lineHeight: '40px', letterSpacing: '0' }],
         'headline-lg-mobile': ['24px', { fontWeight: '600', lineHeight: '32px' }],
         'headline-md': ['24px', { fontWeight: '600', lineHeight: '32px' }],
         'title-md': ['18px', { fontWeight: '600', lineHeight: '24px' }],

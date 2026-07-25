@@ -26,7 +26,7 @@ function formatTime(iso: string) {
 }
 
 function eventColor(e: CalendarEvent) {
-  return e.color || '#adc7ff'
+  return e.color || '#d2bbff'
 }
 
 // ─── Event Modal ─────────────────────────────────────────────────────────────

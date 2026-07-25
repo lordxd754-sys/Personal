@@ -91,19 +91,19 @@ export default function AcompanhamentoPage() {
   }
 
   function urgencyColor(days: number) {
-    if (days > 15) return { dot: 'bg-error', badge: 'error' as const, label: `🔴 ${days}d` }
-    if (days >= 13) return { dot: 'bg-warning', badge: 'warning' as const, label: `🟡 ${days}d` }
-    return { dot: 'bg-success', badge: 'success' as const, label: `🟢 ${days}d` }
+    if (days > 15) return { dot: 'bg-error', badge: 'error' as const, label: `${days}d` }
+    if (days >= 13) return { dot: 'bg-warning', badge: 'warning' as const, label: `${days}d` }
+    return { dot: 'bg-success', badge: 'success' as const, label: `${days}d` }
   }
 
   const overdue = students.filter(s => s.days > 15).length
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-text-primary">Acompanhamento</h1>
-          <p className="text-sm text-text-secondary mt-1">
+      <div className="p-4 md:p-12 max-w-[1120px] mx-auto">
+        <div className="mb-8">
+          <h1 className="text-headline-lg-mobile md:text-display-lg text-text-primary">Acompanhamento</h1>
+          <p className="text-body-md text-on-surface-variant mt-2">
             {overdue > 0
               ? `${overdue} aluno${overdue > 1 ? 's' : ''} com follow-up vencido`
               : 'Todos os alunos em dia'}
@@ -118,21 +118,21 @@ export default function AcompanhamentoPage() {
             <p className="text-text-secondary">Nenhum aluno ativo cadastrado</p>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {students.map(student => {
               const urg = urgencyColor(student.days)
               return (
-                <Card key={student.id} className="p-4">
+                <Card key={student.id} className="p-5 hover:border-primary-container/40 hover:shadow-[0_0_18px_rgba(124,58,237,0.14)] transition-all">
                   <div className="flex items-center gap-4">
                     <div className="relative shrink-0">
-                      <div className="w-11 h-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                      <div className="w-12 h-12 rounded-full bg-primary-container/10 border border-primary-container/30 flex items-center justify-center text-primary font-bold text-sm">
                         {getInitials(student.name)}
                       </div>
                       <span className={`absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface ${urg.dot}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary">{student.name}</p>
-                      <p className="text-xs text-text-secondary truncate">{student.goal || 'Sem objetivo definido'}</p>
+                      <p className="text-title-md text-text-primary">{student.name}</p>
+                      <p className="text-body-sm text-text-secondary truncate">{student.goal || 'Sem objetivo definido'}</p>
                     </div>
                     <div className="hidden sm:block shrink-0">
                       <Badge variant={urg.badge}>{urg.label} sem contato</Badge>
@@ -170,10 +170,10 @@ export default function AcompanhamentoPage() {
 
           {recentFollowUps.length > 0 && (
             <div className="pt-3 border-t border-border">
-              <p className="text-xs font-medium text-text-secondary uppercase mb-2">Últimas mensagens</p>
+              <p className="font-mono text-label-caps text-text-secondary uppercase mb-2">Últimas mensagens</p>
               <div className="space-y-2">
                 {recentFollowUps.map(f => (
-                  <div key={f.id} className="bg-surface-high rounded p-2">
+                  <div key={f.id} className="bg-surface-container-low border border-white/10 rounded-lg p-3">
                     <div className="flex justify-between mb-1">
                       <span className="text-xs text-text-secondary capitalize">{f.channel}</span>
                       <span className="text-xs text-text-secondary">{formatDateTime(f.sentAt)}</span>

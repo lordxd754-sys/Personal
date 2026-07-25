@@ -36,34 +36,34 @@ function MetricCard({
   glowColor?: 'primary' | 'secondary' | 'error'
 }) {
   const glowMap = {
-    primary: 'bg-primary/5 group-hover:bg-primary/10 border-surface-border group-hover:border-primary/40',
+    primary: 'bg-surface-card group-hover:border-primary-container/40 border-surface-border',
     secondary: 'bg-surface-card group-hover:border-secondary/40 border-surface-border',
-    error: 'bg-surface-card border-primary/20 shadow-[0_0_15px_rgba(173,199,255,0.04)]',
+    error: 'bg-surface-card border-error/20 group-hover:border-error/35',
   }
   const iconColorMap = {
     primary: 'text-primary',
     secondary: 'text-secondary',
-    error: 'text-primary',
+    error: 'text-error',
   }
   const badgeStyles = {
-    default: 'bg-primary/20 text-primary',
+    default: 'bg-primary-container/15 text-primary',
     error: 'bg-error/20 text-error',
     secondary: 'bg-secondary/20 text-secondary',
   }
   const glowBg = {
-    primary: 'bg-primary/5 group-hover:bg-primary/10',
+    primary: 'bg-primary-container/10 group-hover:bg-primary-container/20',
     secondary: 'bg-secondary/5 group-hover:bg-secondary/10',
-    error: 'bg-primary/5 group-hover:bg-primary/10',
+    error: 'bg-error/10 group-hover:bg-error/15',
   }
 
   return (
-    <div className={`bg-surface-card border ${glowMap[glowColor]} rounded-xl p-6 flex flex-col justify-between relative overflow-hidden group transition-colors duration-200`}>
+    <div className={`bg-surface-card backdrop-blur-xl border ${glowMap[glowColor]} rounded-lg p-6 flex flex-col justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-[0_0_18px_rgba(124,58,237,0.14)]`}>
       <div className="flex justify-between items-start mb-4">
-        <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center">
           <span className={`material-symbols-outlined ${iconColorMap[glowColor]}`}>{icon}</span>
         </div>
         {badge && (
-          <span className={`${badgeStyles[badgeVariant]} font-semibold text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1`}>
+          <span className={`${badgeStyles[badgeVariant]} font-mono font-semibold uppercase text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1`}>
             {badgeVariant === 'error' && (
               <span className="material-symbols-outlined text-[12px]">warning</span>
             )}
@@ -78,7 +78,7 @@ function MetricCard({
         )}
       </div>
       <div>
-        <p className="text-body-sm text-text-muted mb-1">{label}</p>
+        <p className="font-mono text-label-caps text-text-muted mb-1 uppercase">{label}</p>
         <p className="text-[36px] leading-tight text-on-surface font-bold">{value}</p>
       </div>
       <div className={`absolute -bottom-10 -right-10 w-32 h-32 ${glowBg[glowColor]} blur-3xl rounded-full transition-all`} />
@@ -149,14 +149,14 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-6 max-w-[1200px] mx-auto space-y-6 md:space-y-10">
+      <div className="p-4 md:p-12 max-w-[1440px] mx-auto space-y-8 md:space-y-10">
         {/* Page header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2 md:mt-0">
           <div>
-            <h2 className="text-headline-lg-mobile md:text-headline-lg text-on-surface">Visão Geral</h2>
-            <p className="text-body-sm text-text-muted mt-1">Bem-vindo de volta. Aqui está o resumo do seu dia.</p>
+            <h2 className="text-headline-lg-mobile md:text-display-lg text-on-surface">Visão Geral</h2>
+            <p className="text-body-md text-on-surface-variant mt-2">Bem-vindo de volta. Aqui está o resumo do seu dia.</p>
           </div>
-          <Link href="/agenda" className="self-start md:self-auto px-4 py-2 bg-surface-container rounded-lg border border-surface-border text-on-surface text-label-caps hover:bg-surface-container-high transition-colors flex items-center gap-2">
+          <Link href="/agenda" className="self-start md:self-auto px-4 py-2 bg-white/[0.03] rounded-lg border border-white/10 text-on-surface font-mono text-label-caps hover:bg-white/[0.06] hover:border-primary-container/40 transition-colors flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             Hoje
           </Link>
@@ -196,11 +196,11 @@ export default function DashboardPage() {
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-title-md text-on-surface">Próximas Ações</h3>
-              <Link href="/alunos" className="text-primary text-label-caps hover:underline">
+              <Link href="/alunos" className="font-mono text-secondary text-label-caps hover:underline">
                 Ver todos
               </Link>
             </div>
-            <div className="bg-surface-card border border-surface-border rounded-xl overflow-hidden">
+            <div className="bg-surface-card backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden">
               {!data?.urgentStudents.length ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                   <span className="material-symbols-outlined text-4xl text-success mb-3">check_circle</span>
@@ -213,8 +213,8 @@ export default function DashboardPage() {
                     const days = daysSince(s.lastContactAt)
                     return (
                       <Link key={s.id} href={`/alunos/${s.id}`}>
-                        <div className="p-4 flex items-center gap-4 hover:bg-surface-container/40 transition-colors cursor-pointer group">
-                          <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-label-sm shrink-0 border border-surface-border">
+                        <div className="p-4 flex items-center gap-4 hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                          <div className="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold text-label-sm shrink-0 border border-primary-container/25">
                             {s.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -240,7 +240,7 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-title-md text-on-surface">Atividades Recentes</h3>
             </div>
-            <div className="bg-surface-card border border-surface-border rounded-xl p-4">
+            <div className="bg-surface-card backdrop-blur-xl border border-white/10 rounded-lg p-4">
               {recentItems.length === 0 ? (
                 <p className="text-body-sm text-text-muted text-center py-6">Nenhuma atividade recente</p>
               ) : (
@@ -249,12 +249,12 @@ export default function DashboardPage() {
                     const { icon, color } = activityIconMap[item.type] || activityIconMap.execution
                     return (
                       <div key={item.id} className="relative flex items-start gap-4">
-                        <div className={`w-9 h-9 rounded-full border border-surface-border bg-surface-card ${color} flex items-center justify-center shrink-0 z-10`}>
+                        <div className={`w-9 h-9 rounded-full border border-white/10 bg-surface-card ${color} flex items-center justify-center shrink-0 z-10`}>
                           <span className="material-symbols-outlined text-[16px]">{icon}</span>
                         </div>
                         <div className="pt-1 min-w-0">
                           <p className="text-body-sm text-on-surface leading-snug">{item.text}</p>
-                          <time className="text-label-sm text-text-muted">{item.time}</time>
+                          <time className="font-mono text-label-sm text-text-muted">{item.time}</time>
                         </div>
                       </div>
                     )

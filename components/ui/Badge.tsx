@@ -7,9 +7,9 @@ interface BadgeProps {
 }
 
 const variantClasses = {
-  default: 'bg-surface-container text-text-muted border border-surface-border',
-  neutral: 'bg-surface-container text-text-muted border border-surface-border',
-  primary: 'bg-primary/20 text-primary border border-primary/30',
+  default: 'bg-white/[0.04] text-text-muted border border-white/10',
+  neutral: 'bg-white/[0.04] text-text-muted border border-white/10',
+  primary: 'bg-primary-container/15 text-primary border border-primary-container/30',
   success: 'bg-success/10 text-success border border-success/20',
   warning: 'bg-warning/10 text-warning border border-warning/20',
   error: 'bg-error/10 text-error border border-error/20',
@@ -21,6 +21,7 @@ export default function Badge({ children, variant = 'default', className }: Badg
     <span
       className={cn(
         'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-sm font-semibold',
+        'font-mono uppercase',
         variantClasses[variant],
         className
       )}

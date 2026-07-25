@@ -25,14 +25,14 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
       {/* More panel overlay */}
       {showMore && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-md"
           onClick={() => setShowMore(false)}
         />
       )}
 
       {/* More panel */}
       <div className={cn(
-        'md:hidden fixed left-0 right-0 z-50 bg-surface-card border-t border-surface-border transition-transform duration-300 ease-out',
+        'md:hidden fixed left-0 right-0 z-50 bg-surface-card/95 backdrop-blur-2xl border-t border-white/10 transition-transform duration-300 ease-out shadow-[0_-20px_40px_rgba(0,0,0,0.45)]',
         showMore ? 'translate-y-0' : 'translate-y-full',
         'bottom-[60px]'
       )}>
@@ -45,8 +45,8 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
                 href={item.href}
                 onClick={() => setShowMore(false)}
                 className={cn(
-                  'flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all active:scale-95 relative',
-                  isActive ? 'bg-primary-container/20 text-primary' : 'text-text-muted hover:bg-surface-container'
+                  'flex flex-col items-center gap-1.5 py-3 rounded-lg transition-all active:scale-95 relative',
+                  isActive ? 'bg-secondary/10 text-secondary border border-secondary/20' : 'text-text-muted hover:bg-white/[0.05]'
                 )}
               >
                 <span
@@ -55,9 +55,9 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
                 >
                   {item.icon}
                 </span>
-                <span className="text-[10px] font-semibold text-center leading-tight">{item.label}</span>
+                <span className="font-mono text-[10px] font-semibold text-center leading-tight uppercase">{item.label}</span>
                 {item.badge && overdueCount > 0 && (
-                  <span className="absolute top-2 right-2 bg-error text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5">
+                  <span className="absolute top-2 right-2 bg-error text-on-error text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5">
                     {overdueCount > 9 ? '9+' : overdueCount}
                   </span>
                 )}
@@ -68,7 +68,7 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
       </div>
 
       {/* Bottom bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-card/90 backdrop-blur-xl border-t border-surface-border z-50 h-[60px]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-card/90 backdrop-blur-2xl border-t border-white/10 z-50 h-[60px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-around h-full px-1">
           {mainItems.map(item => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
@@ -78,8 +78,8 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
                 href={item.href}
                 onClick={() => setShowMore(false)}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-150 active:scale-95 relative',
-                  isActive ? 'text-primary' : 'text-text-muted'
+                  'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-150 active:scale-95 relative',
+                  isActive ? 'text-secondary' : 'text-text-muted'
                 )}
               >
                 <span
@@ -88,11 +88,11 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
                 >
                   {item.icon}
                 </span>
-                <span className={cn('text-[10px] font-semibold', isActive ? 'text-primary' : 'text-text-muted')}>
+                <span className={cn('font-mono text-[10px] font-semibold uppercase', isActive ? 'text-secondary' : 'text-text-muted')}>
                   {item.label}
                 </span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-secondary rounded-full" />
                 )}
               </Link>
             )
@@ -102,8 +102,8 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
           <button
             onClick={() => setShowMore(v => !v)}
             className={cn(
-              'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-150 active:scale-95 relative',
-              showMore || isMoreActive ? 'text-primary' : 'text-text-muted'
+              'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-150 active:scale-95 relative',
+              showMore || isMoreActive ? 'text-secondary' : 'text-text-muted'
             )}
           >
             <span
@@ -115,11 +115,11 @@ export default function BottomNav({ overdueCount = 0 }: BottomNavProps) {
             >
               {showMore ? 'close' : 'grid_view'}
             </span>
-            <span className={cn('text-[10px] font-semibold', showMore || isMoreActive ? 'text-primary' : 'text-text-muted')}>
+            <span className={cn('font-mono text-[10px] font-semibold uppercase', showMore || isMoreActive ? 'text-secondary' : 'text-text-muted')}>
               Mais
             </span>
             {!showMore && isMoreActive && (
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-secondary rounded-full" />
             )}
             {overdueCount > 0 && !showMore && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full" />
