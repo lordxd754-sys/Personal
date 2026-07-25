@@ -50,6 +50,19 @@ const CLASSIFICATION_COLORS: Record<string, string> = {
   'Obesidade severa': 'text-red-400 bg-red-500/10',
 }
 
+const FORM_NOTES_MARKER = 'Dados completos do formulário:'
+
+function splitStudentNotes(notes: string | null | undefined) {
+  if (!notes) return { regularNotes: '', formNotes: '' }
+  const markerIndex = notes.indexOf(FORM_NOTES_MARKER)
+  if (markerIndex === -1) return { regularNotes: notes.trim(), formNotes: '' }
+
+  return {
+    regularNotes: notes.slice(0, markerIndex).replace(/^Observações do aluno:\s*/i, '').trim(),
+    formNotes: notes.slice(markerIndex + FORM_NOTES_MARKER.length).trim(),
+  }
+}
+
 function deltaBadge(curr: number | null, prev: number | null, lowerIsBetter = false) {
   if (curr == null || prev == null) return null
   const d = Math.round((curr - prev) * 10) / 10
@@ -256,6 +269,7 @@ export default function AlunoPage() {
     acc[d].push(p)
     return acc
   }, {})
+  const { regularNotes, formNotes } = splitStudentNotes(student.notes)
 
   return (
     <AppLayout>
@@ -352,12 +366,20 @@ export default function AlunoPage() {
                 <p className="text-body-sm text-text-primary">{student.equipment}</p>
               </div>
             )}
-            {student.notes && (
+            {regularNotes && (
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-label-sm text-text-secondary uppercase tracking-wide mb-1">
                   Observações
                 </p>
-                <p className="text-body-sm text-text-primary">{student.notes}</p>
+                <p className="text-body-sm text-text-primary whitespace-pre-wrap">{regularNotes}</p>
+              </div>
+            )}
+            {formNotes && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-label-sm text-text-secondary uppercase tracking-wide mb-1">
+                  Dados completos do formulário
+                </p>
+                <p className="text-body-sm text-text-primary whitespace-pre-wrap">{formNotes}</p>
               </div>
             )}
           </Card>

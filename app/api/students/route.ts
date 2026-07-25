@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
+import { normalizeStudentIntake, readStudentIntakeRequest } from '@/lib/student-intake'
+import { upsertStudentFromIntake } from '@/lib/student-upsert'
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
@@ -47,11 +49,23 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   try {
-    const body = await request.json()
+    const body = await readStudentIntakeRequest(request)
+    const bodyObject = body && typeof body === 'object' && !Array.isArray(body) ? body : { raw: body }
+    const contentType = request.headers.get('content-type') || ''
+    const hasFormSignals = ['rawRequest', 'pretty', 'submissionID', 'submissionId', 'formID', 'formId'].some(
+      (key) => Object.prototype.hasOwnProperty.call(bodyObject, key)
+    )
+    const shouldNormalize = !contentType.includes('application/json') || hasFormSignals
+
+    if (shouldNormalize) {
+      const { student } = await upsertStudentFromIntake(normalizeStudentIntake(bodyObject))
+      return NextResponse.json(student, { status: 201 })
+    }
+
     const now = new Date().toISOString()
     const { data, error } = await supabaseAdmin
       .from('Student')
-      .insert({ ...body, createdAt: now, updatedAt: now })
+      .insert({ ...bodyObject, createdAt: now, updatedAt: now })
       .select()
       .single()
     if (error) throw error
