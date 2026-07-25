@@ -18,7 +18,7 @@ async function main() {
   console.log('🌱 Starting seed...')
 
   // 1. Admin user
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@ptmanager.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@orquestra.com'
   const adminPassword = process.env.ADMIN_PASSWORD
 
   if (!adminPassword || adminPassword.length < 10) {
@@ -225,7 +225,7 @@ async function main() {
   console.log('✅ Default settings created')
 
   console.log('\n🎉 Seed complete!')
-  console.log('   Login: admin@ptmanager.com / admin123')
+  console.log('   Login: admin@orquestra.com / admin123')
   process.exit(0)
 }
 

@@ -23,7 +23,7 @@ export default function Sidebar({ overdueCount = 0, mobileOpen = false, onMobile
           </span>
         </div>
         <div>
-          <h1 className="text-[20px] leading-tight text-primary font-bold">PT Manager</h1>
+          <h1 className="text-[20px] leading-tight text-primary font-bold">Orquestra</h1>
           <p className="text-label-caps text-text-muted">Performance Premium</p>
         </div>
       </div>

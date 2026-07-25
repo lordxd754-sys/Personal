@@ -1,4 +1,4 @@
--- PT Manager Initial Schema
+-- Orquestra Initial Schema
 
 -- User table (personal trainer profile)
 CREATE TABLE IF NOT EXISTS "User" (

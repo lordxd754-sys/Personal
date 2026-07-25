@@ -4,8 +4,8 @@ import Providers from './providers'
 import { getSession } from '@/lib/get-session'
 
 export const metadata: Metadata = {
-  title: 'PT Manager',
-  description: 'Plataforma de gestão de consultoria online para personal trainer',
+  title: 'Orquestra',
+  description: 'Plataforma de gestão de alunos, treinos e avaliações físicas',
 }
 
 export default async function RootLayout({

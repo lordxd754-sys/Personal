@@ -110,7 +110,7 @@ export default function ConfiguracoesPage() {
                 <Input id="smtpUser" label="Usuário" value={settings.smtpUser || ''} onChange={e => update('smtpUser', e.target.value)} placeholder="seu@email.com" />
                 <Input id="smtpPass" label="Senha" type="password" value={settings.smtpPass || ''} onChange={e => update('smtpPass', e.target.value)} />
                 <div className="sm:col-span-2">
-                  <Input id="smtpFrom" label="Remetente" value={settings.smtpFrom || ''} onChange={e => update('smtpFrom', e.target.value)} placeholder="PT Manager <noreply@seu.com>" />
+                  <Input id="smtpFrom" label="Remetente" value={settings.smtpFrom || ''} onChange={e => update('smtpFrom', e.target.value)} placeholder="Orquestra <noreply@seu.com>" />
                 </div>
               </div>
               {testResult && (

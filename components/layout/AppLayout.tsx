@@ -57,7 +57,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             )}
           </div>
-          <span className="text-label-caps font-bold text-primary">PT Manager</span>
+          <span className="text-label-caps font-bold text-primary">Orquestra</span>
           <button
             type="button"
             onClick={() => router.push('/perfil')}

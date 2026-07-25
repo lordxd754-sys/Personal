@@ -5,7 +5,7 @@ export const AUTH_ENABLED = process.env.ENABLE_AUTH === 'true' && process.env.DI
 const devSession: Session = {
   user: {
     id: 'dev',
-    email: process.env.DEV_USER_EMAIL || 'dev@ptmanager.local',
+    email: process.env.DEV_USER_EMAIL || 'dev@orquestra.local',
     name: process.env.DEV_USER_NAME || 'Personal Trainer',
   },
   expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),

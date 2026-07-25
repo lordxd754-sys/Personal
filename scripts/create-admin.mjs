@@ -5,8 +5,8 @@ import crypto from 'node:crypto'
 
 dotenv.config({ path: '.env.local' })
 
-const email = process.env.ADMIN_EMAIL || 'admin@ptmanager.com'
-const name = process.env.ADMIN_NAME || 'Administrador PT Manager'
+const email = process.env.ADMIN_EMAIL || 'admin@orquestra.com'
+const name = process.env.ADMIN_NAME || 'Administrador Orquestra'
 const providedPassword = Boolean(process.env.ADMIN_PASSWORD)
 const password = process.env.ADMIN_PASSWORD || crypto.randomBytes(18).toString('base64url')
 
