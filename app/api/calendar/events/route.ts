@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/get-session'
-import { supabaseAdmin } from '@/lib/supabase'
-import { fetchCalendarEvents, createCalendarEvent } from '@/lib/google-calendar'
-
-async function getTokens(userId: string) {
-  const { data } = await supabaseAdmin
-    .from('GoogleToken')
-    .select('accessToken, refreshToken')
-    .eq('userId', userId)
-    .single()
-  return data
-}
+import { fetchCalendarEvents, createCalendarEvent } from '@/lib/calendar'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -22,11 +12,8 @@ export async function GET(req: NextRequest) {
 
   if (!start || !end) return NextResponse.json({ error: 'start and end required' }, { status: 400 })
 
-  const tokens = await getTokens(session.user.id)
-  if (!tokens) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })
-
   try {
-    const events = await fetchCalendarEvents(tokens.accessToken, tokens.refreshToken, start, end)
+    const events = await fetchCalendarEvents(session.user.id, start, end)
     return NextResponse.json(events)
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
@@ -37,12 +24,9 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const tokens = await getTokens(session.user.id)
-  if (!tokens) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })
-
   try {
     const body = await req.json()
-    const event = await createCalendarEvent(tokens.accessToken, tokens.refreshToken, body)
+    const event = await createCalendarEvent(session.user.id, body)
     return NextResponse.json(event)
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })

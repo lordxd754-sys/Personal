@@ -4,8 +4,8 @@ import { useSession } from 'next-auth/react'
 import AppLayout from '@/components/layout/AppLayout'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
-import type { CalendarEvent, GoogleEventInput } from '@/lib/google-calendar'
-import { GOOGLE_COLORS } from '@/lib/calendar-colors'
+import type { CalendarEvent, CalendarEventInput } from '@/lib/calendar'
+import { NATIVE_COLORS } from '@/lib/calendar'
 
 type ViewMode = 'month' | 'week' | 'day' | 'agenda'
 
@@ -32,8 +32,8 @@ function eventColor(e: CalendarEvent) {
 // ─── Event Modal ─────────────────────────────────────────────────────────────
 interface EventModalProps {
   onClose: () => void
-  onSave: (data: GoogleEventInput) => Promise<void>
-  initial?: Partial<GoogleEventInput & { id: string }>
+  onSave: (data: CalendarEventInput) => Promise<void>
+  initial?: Partial<CalendarEventInput & { id: string }>
   students: { id: string; name: string; goal: string | null }[]
 }
 
@@ -44,10 +44,7 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
   const [endDT, setEndDT] = useState(initial?.endDateTime ?? initial?.endDate ?? '')
   const [location, setLocation] = useState(initial?.location ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
-  const [colorId, setColorId] = useState(initial?.colorId ?? '')
-  const [reminderMinutes, setReminderMinutes] = useState(initial?.reminderMinutes ?? 30)
-  const [attendeeInput, setAttendeeInput] = useState('')
-  const [attendees, setAttendees] = useState<string[]>(initial?.attendees ?? [])
+  const [color, setColor] = useState(initial?.color ?? '')
   const [saving, setSaving] = useState(false)
   const [studentQuery, setStudentQuery] = useState('')
   const [showStudents, setShowStudents] = useState(false)
@@ -59,13 +56,6 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
     setDescription(`Sessão com ${s.name}${s.goal ? ` — Objetivo: ${s.goal}` : ''}`)
     setStudentQuery(s.name)
     setShowStudents(false)
-  }
-
-  function addAttendee() {
-    if (attendeeInput && attendeeInput.includes('@') && !attendees.includes(attendeeInput)) {
-      setAttendees(a => [...a, attendeeInput])
-      setAttendeeInput('')
-    }
   }
 
   async function handleSave() {
@@ -81,9 +71,7 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
         endDate: allDay ? (endDT || startDT).slice(0, 10) : undefined,
         location: location || undefined,
         description: description || undefined,
-        colorId: colorId || undefined,
-        reminderMinutes,
-        attendees: attendees.length ? attendees : undefined,
+        color: color || undefined,
       })
       onClose()
     } finally {
@@ -190,65 +178,19 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
             />
           </div>
 
-          {/* Reminder + Color */}
-          <div className="flex gap-3 flex-wrap">
-            <div className="flex items-center gap-2 bg-surface-container border border-surface-border rounded-lg px-3 py-2 flex-1 min-w-[160px]">
-              <span className="material-symbols-outlined text-text-muted text-lg">notifications</span>
-              <select
-                value={reminderMinutes}
-                onChange={e => setReminderMinutes(Number(e.target.value))}
-                className="flex-1 bg-transparent text-body-sm text-on-surface outline-none"
-              >
-                <option value={5}>5 minutos</option>
-                <option value={10}>10 minutos</option>
-                <option value={15}>15 minutos</option>
-                <option value={30}>30 minutos</option>
-                <option value={60}>1 hora</option>
-                <option value={1440}>1 dia</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {Object.entries(GOOGLE_COLORS).map(([id, color]) => (
-                <button
-                  key={id}
-                  onClick={() => setColorId(id === colorId ? '' : id)}
-                  style={{ backgroundColor: color }}
-                  className={`w-6 h-6 rounded-full transition-transform ${colorId === id ? 'scale-125 ring-2 ring-white ring-offset-1 ring-offset-surface-card' : 'hover:scale-110'}`}
-                />
-              ))}
-            </div>
+          {/* Color */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {Object.entries(NATIVE_COLORS).map(([name, hex]) => (
+              <button
+                key={name}
+                onClick={() => setColor(color === hex ? '' : hex)}
+                style={{ backgroundColor: hex }}
+                className={`w-6 h-6 rounded-full transition-transform ${color === hex ? 'scale-125 ring-2 ring-white ring-offset-1 ring-offset-surface-card' : 'hover:scale-110'}`}
+                title={name}
+              />
+            ))}
           </div>
 
-          {/* Attendees */}
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <div className="flex items-center gap-2 flex-1 bg-surface-container border border-surface-border rounded-lg px-3 py-2">
-                <span className="material-symbols-outlined text-text-muted text-lg">group_add</span>
-                <input
-                  value={attendeeInput}
-                  onChange={e => setAttendeeInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addAttendee()}
-                  placeholder="Adicionar convidado por e-mail"
-                  className="flex-1 bg-transparent text-body-sm text-on-surface placeholder-text-muted outline-none"
-                />
-              </div>
-              <button onClick={addAttendee} className="px-3 py-2 bg-surface-container-high border border-surface-border rounded-lg text-text-muted hover:text-on-surface text-body-sm">
-                +
-              </button>
-            </div>
-            {attendees.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {attendees.map(a => (
-                  <span key={a} className="flex items-center gap-1 bg-primary-container/20 text-primary text-label-caps rounded-full px-3 py-1">
-                    {a}
-                    <button onClick={() => setAttendees(prev => prev.filter(x => x !== a))}>
-                      <span className="material-symbols-outlined text-sm">close</span>
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="flex gap-3 px-6 py-4 border-t border-surface-border">
@@ -315,34 +257,17 @@ function EventPopover({ event, onClose, onEdit, onDelete }: {
               <span className="line-clamp-3">{event.description}</span>
             </div>
           )}
-          {event.attendees && event.attendees.length > 0 && (
-            <div className="flex items-start gap-3 text-body-sm text-on-surface-variant">
-              <span className="material-symbols-outlined text-lg text-text-muted">group</span>
-              <span>{event.attendees.join(', ')}</span>
-            </div>
-          )}
         </div>
 
-        {event.htmlLink && (
-          <div className="px-4 pb-4 flex gap-2">
-            <a
-              href={event.htmlLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-2 border border-surface-border rounded-lg text-label-caps text-text-muted hover:bg-surface-container-high transition-colors"
-            >
-              <span className="material-symbols-outlined text-lg">open_in_new</span>
-              Abrir no Google
-            </a>
-            <button
-              onClick={onEdit}
-              className="flex-1 flex items-center justify-center gap-2 py-2 bg-primary-container text-on-primary-container rounded-lg text-label-caps font-semibold hover:bg-primary-dim transition-colors"
-            >
-              <span className="material-symbols-outlined text-lg">edit</span>
-              Editar
-            </button>
-          </div>
-        )}
+        <div className="px-4 pb-4 flex gap-2">
+          <button
+            onClick={onEdit}
+            className="flex-1 flex items-center justify-center gap-2 py-2 bg-primary-container text-on-primary-container rounded-lg text-label-caps font-semibold hover:bg-primary-dim transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">edit</span>
+            Editar
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -350,36 +275,23 @@ function EventPopover({ event, onClose, onEdit, onDelete }: {
 
 // ─── Not Connected Screen ──────────────────────────────────────────────────────
 function NotConnected() {
-  const [loading, setLoading] = useState(false)
   return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="max-w-sm text-center">
         <div className="w-20 h-20 rounded-2xl bg-primary-container/20 flex items-center justify-center mx-auto mb-6">
           <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
         </div>
-        <h2 className="text-headline-md text-on-surface mb-2">Conecte sua conta Google</h2>
+        <h2 className="text-headline-md text-on-surface mb-2">Faça login para usar a agenda</h2>
         <p className="text-body-md text-text-muted mb-6">
-          Sincronize sua agenda com o Google Calendar e gerencie todos os seus compromissos em um só lugar.
+          Você precisa estar autenticado para gerenciar seus compromissos.
         </p>
-        <div className="space-y-2 text-body-sm text-text-muted mb-8 text-left">
-          {['Visualize eventos em tempo real', 'Crie e edite compromissos', 'Vincule sessões aos seus alunos', 'Receba lembretes automáticos'].map(f => (
-            <div key={f} className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-success text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-              {f}
-            </div>
-          ))}
-        </div>
-        <Button
-          loading={loading}
-          onClick={() => { setLoading(true); window.location.href = '/api/auth/google-connect' }}
-          className="w-full gap-2"
+        <a
+          href="/login"
+          className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-on-primary rounded-xl text-label-caps font-semibold hover:bg-primary-dim transition-colors"
         >
           <span className="material-symbols-outlined text-lg">login</span>
-          Conectar com Google
-        </Button>
-        <p className="text-label-caps text-text-muted mt-4">
-          Suas informações são privadas e seguras. Acesso apenas à agenda.
-        </p>
+          Entrar
+        </a>
       </div>
     </div>
   )
@@ -741,19 +653,16 @@ export default function AgendaPage() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null)
-  const [modalDefaults, setModalDefaults] = useState<Partial<GoogleEventInput>>({})
+  const [modalDefaults, setModalDefaults] = useState<Partial<CalendarEventInput>>({})
   const [students, setStudents] = useState<{ id: string; name: string; goal: string | null }[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const today = new Date()
 
-  // Check Google connection — wait for session to finish loading
+  // Check authentication status
   useEffect(() => {
     if (sessionStatus === 'loading') return
     if (sessionStatus === 'unauthenticated') { setConnected(false); return }
-    fetch('/api/calendar/status')
-      .then(r => r.ok ? r.json() : { connected: false })
-      .then(d => setConnected(!!d.connected))
-      .catch(() => setConnected(false))
+    setConnected(true)
   }, [sessionStatus])
 
   // Fetch students
@@ -817,7 +726,7 @@ export default function AgendaPage() {
     return 'Próximos eventos'
   }
 
-  function openNewEvent(defaults: Partial<GoogleEventInput> = {}) {
+  function openNewEvent(defaults: Partial<CalendarEventInput> = {}) {
     setEditEvent(null)
     setModalDefaults(defaults)
     setShowModal(true)
@@ -835,13 +744,12 @@ export default function AgendaPage() {
       endDate: e.allDay ? e.end : undefined,
       location: e.location,
       description: e.description,
-      colorId: e.colorId,
-      attendees: e.attendees,
+      color: e.color,
     })
     setShowModal(true)
   }
 
-  async function saveEvent(data: GoogleEventInput) {
+  async function saveEvent(data: CalendarEventInput) {
     if (editEvent) {
       await fetch(`/api/calendar/events/${editEvent.id}`, {
         method: 'PUT',

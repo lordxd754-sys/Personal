@@ -1,24 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/get-session'
-import { supabaseAdmin } from '@/lib/supabase'
-import { listCalendars } from '@/lib/google-calendar'
 
 export async function GET() {
   const session = await getSession()
   if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { data } = await supabaseAdmin
-    .from('GoogleToken')
-    .select('accessToken, refreshToken')
-    .eq('userId', session.user.id)
-    .single()
-
-  if (!data) return NextResponse.json({ error: 'Google not connected' }, { status: 403 })
-
-  try {
-    const calendars = await listCalendars(data.accessToken, data.refreshToken)
-    return NextResponse.json(calendars)
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
-  }
+  return NextResponse.json([{ id: 'local', summary: 'Minha agenda', primary: true }])
 }
