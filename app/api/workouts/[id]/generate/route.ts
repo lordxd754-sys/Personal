@@ -4,6 +4,21 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
 
+const generateRateLimit = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT_WINDOW = 5 * 60 * 1000
+const RATE_LIMIT_MAX = 3
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now()
+  const current = generateRateLimit.get(userId)
+  if (!current || current.resetAt < now) {
+    generateRateLimit.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
+    return false
+  }
+  current.count++
+  return current.count > RATE_LIMIT_MAX
+}
+
 const SYSTEM_PROMPT = `Você é um Personal Trainer especialista de alto nível, com formação completa em Educação Física e mais de 15 anos de experiência.
 
 ESPECIALIDADES:
@@ -51,11 +66,15 @@ Formato JSON obrigatório:
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  if (isRateLimited(session.user.id)) {
+    return NextResponse.json({ error: 'Limite de gerações atingido. Aguarde 5 minutos.' }, { status: 429 })
+  }
 
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey || apiKey === 'placeholder_gemini_key') {
-    return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 400 })
+  if (!apiKey) {
+    return NextResponse.json({ error: 'Serviço de IA não configurado' }, { status: 500 })
   }
 
   try {
@@ -64,11 +83,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       .select('*, Student(*)')
       .eq('id', params.id)
       .single()
-    if (wErr) throw wErr
+    if (wErr) return NextResponse.json({ error: 'Treino não encontrado' }, { status: 404 })
 
     const student = workout.Student as Record<string, unknown>
 
-    // Get latest assessment
     const { data: assessments } = await supabaseAdmin
       .from('PhysicalAssessment')
       .select('*')
@@ -77,11 +95,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       .limit(1)
     const latestAssessment = assessments?.[0] || null
 
-    // Get settings/preferences
     const { data: settingsArr } = await supabaseAdmin.from('Settings').select('workoutPreferences').limit(1)
     const preferences = (settingsArr?.[0] as Record<string, unknown> | undefined)?.workoutPreferences || ''
 
-    // Build user prompt
     const age = student.birthdate
       ? Math.floor((Date.now() - new Date(student.birthdate as string).getTime()) / (1000 * 60 * 60 * 24 * 365))
       : null
@@ -123,8 +139,7 @@ Crie o treino agora:`.trim()
     })
 
     if (!response.ok) {
-      const errText = await response.text()
-      throw new Error(`Gemini API error: ${errText}`)
+      return NextResponse.json({ error: 'Erro ao gerar treino com IA' }, { status: 502 })
     }
 
     const geminiData = await response.json() as Record<string, unknown>
@@ -132,7 +147,6 @@ Crie o treino agora:`.trim()
     const rawText =
       (((candidates?.[0]?.content as Record<string, unknown>)?.parts as Array<Record<string, unknown>>)?.[0]?.text as string) || ''
 
-    // Parse JSON (strip markdown fences if present)
     let jsonStr = rawText.trim()
     if (jsonStr.startsWith('```')) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
@@ -156,13 +170,12 @@ Crie o treino agora:`.trim()
       }>
     }
 
-    // Update workout title + content
     await supabaseAdmin.from('Workout').update({
       title: aiWorkout.title,
       content: JSON.stringify({ generalNotes: aiWorkout.generalNotes }),
+      updatedAt: new Date().toISOString(),
     }).eq('id', params.id)
 
-    // Replace sessions
     await supabaseAdmin.from('WorkoutSession').delete().eq('workoutId', params.id)
 
     for (const sess of (aiWorkout.sessions || [])) {
@@ -186,7 +199,6 @@ Crie o treino agora:`.trim()
       }
     }
 
-    // Return full updated workout
     const { data: finalWorkout } = await supabaseAdmin
       .from('Workout')
       .select('*, Student(*)')
@@ -199,8 +211,7 @@ Crie o treino agora:`.trim()
       .order('order', { ascending: true })
 
     return NextResponse.json({ ...finalWorkout, sessions: finalSessions })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Erro ao gerar treino' }, { status: 500 })
   }
 }

@@ -4,13 +4,12 @@ import { upsertStudentFromIntake } from '@/lib/student-upsert'
 
 function isAuthorized(request: NextRequest) {
   const secret = process.env.JOTFORM_WEBHOOK_SECRET
-  if (!secret) return true
+  if (!secret) return false
 
   const url = new URL(request.url)
   return (
     request.headers.get('x-jotform-secret') === secret ||
-    request.headers.get('x-webhook-secret') === secret ||
-    url.searchParams.get('secret') === secret
+    request.headers.get('x-webhook-secret') === secret
   )
 }
 
@@ -26,8 +25,7 @@ export async function POST(request: NextRequest) {
     const { student, action } = await upsertStudentFromIntake(payload)
 
     return NextResponse.json({ ok: true, action, student })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ ok: false, error: message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ ok: false, error: 'Erro ao processar webhook' }, { status: 500 })
   }
 }

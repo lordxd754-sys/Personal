@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
   try {
@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
       .order('createdAt', { ascending: false })
     if (status && status !== 'all') query = query.eq('status', status)
     const { data, error } = await query
-    if (error) throw error
+    if (error) return NextResponse.json({ error: 'Erro ao buscar treinos' }, { status: 500 })
     return NextResponse.json(data || [])
-  } catch (err: unknown) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

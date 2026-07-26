@@ -3,10 +3,13 @@ import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { normalizeStudentIntake, readStudentIntakeRequest } from '@/lib/student-intake'
 import { upsertStudentFromIntake } from '@/lib/student-upsert'
+import { pick, sanitizeSearchQuery } from '@/lib/sanitize'
+
+const ALLOWED_STUDENT_FIELDS = ['name', 'email', 'phone', 'goal', 'level', 'status', 'notes', 'avatar', 'birthDate', 'weight', 'height', 'address'] as const
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const search = searchParams.get('search')
@@ -18,7 +21,8 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin.from('Student').select('*')
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+      const safeSearch = sanitizeSearchQuery(search)
+      query = query.or(`name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%`)
     }
     if (status && status !== 'all') {
       query = query.eq('status', status)
@@ -36,17 +40,16 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = await query
-    if (error) throw error
+    if (error) return NextResponse.json({ error: 'Erro ao buscar alunos' }, { status: 500 })
     return NextResponse.json(data || [])
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   try {
     const body = await readStudentIntakeRequest(request)
@@ -62,16 +65,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(student, { status: 201 })
     }
 
+    const allowed = pick(bodyObject, [...ALLOWED_STUDENT_FIELDS])
     const now = new Date().toISOString()
+
+    if (!allowed.name || typeof allowed.name !== 'string' || allowed.name.trim().length < 2) {
+      return NextResponse.json({ error: 'Nome do aluno é obrigatório' }, { status: 400 })
+    }
+
     const { data, error } = await supabaseAdmin
       .from('Student')
-      .insert({ ...bodyObject, createdAt: now, updatedAt: now })
+      .insert({ ...allowed, createdAt: now, updatedAt: now })
       .select()
       .single()
-    if (error) throw error
+    if (error) return NextResponse.json({ error: 'Erro ao criar aluno' }, { status: 500 })
     return NextResponse.json(data, { status: 201 })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
