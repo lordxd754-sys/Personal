@@ -4,8 +4,8 @@ import { useSession } from 'next-auth/react'
 import AppLayout from '@/components/layout/AppLayout'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
-import type { CalendarEvent, CalendarEventInput } from '@/lib/calendar'
-import { NATIVE_COLORS } from '@/lib/calendar'
+import type { CalendarEvent, CalendarEventInput } from '@/lib/calendar-types'
+import { NATIVE_COLORS } from '@/lib/calendar-types'
 
 type ViewMode = 'month' | 'week' | 'day' | 'agenda'
 
