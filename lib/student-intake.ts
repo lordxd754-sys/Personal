@@ -7,6 +7,8 @@ export type StudentIntakePayload = {
   email: string | null
   phone: string | null
   birthdate: string | null
+  age: number | null
+  height: number | null
   city: string | null
   state: string | null
   goal: string | null
@@ -32,6 +34,8 @@ const FIELD_ALIASES = {
   email: ['email', 'e-mail', 'mail'],
   phone: ['telefone', 'celular', 'whatsapp', 'phone', 'mobile'],
   birthdate: ['data de nascimento', 'nascimento', 'birthdate', 'birth date', 'birthday', 'date of birth'],
+  age: ['idade', 'age'],
+  height: ['altura', 'height', 'estatura', 'altura cm', 'altura (cm)'],
   city: ['cidade', 'city'],
   state: ['estado', 'uf', 'state'],
   goal: ['objetivo', 'meta', 'goal', 'objetivo principal'],
@@ -165,6 +169,14 @@ function numberInRange(value: string, fallback: number, min: number, max: number
   return Math.min(Math.max(number, min), max)
 }
 
+function optionalNumberInRange(value: string, min: number, max: number) {
+  if (!value) return null
+  const normalized = value.replace(',', '.')
+  const number = Number.parseFloat(normalized.match(/\d+(?:\.\d+)?/)?.[0] || '')
+  if (!Number.isFinite(number)) return null
+  return Math.min(Math.max(number, min), max)
+}
+
 function buildFullNotes(entries: IntakeEntry[], baseNotes: string | null) {
   const ignored = new Set(['rawRequest'])
   const lines = entries
@@ -213,6 +225,8 @@ export function normalizeStudentIntake(input: Record<string, IntakeValue>): Stud
   const email = firstByAliases(entries, FIELD_ALIASES.email) || null
   const phone = firstByAliases(entries, FIELD_ALIASES.phone) || null
   const birthdate = normalizeDate(firstByAliases(entries, FIELD_ALIASES.birthdate))
+  const ageRaw = firstByAliases(entries, FIELD_ALIASES.age)
+  const heightRaw = firstByAliases(entries, FIELD_ALIASES.height)
   const city = firstByAliases(entries, FIELD_ALIASES.city) || null
   const state = firstByAliases(entries, FIELD_ALIASES.state)?.slice(0, 2).toUpperCase() || null
   const goal = firstByAliases(entries, FIELD_ALIASES.goal) || null
@@ -228,6 +242,8 @@ export function normalizeStudentIntake(input: Record<string, IntakeValue>): Stud
     email,
     phone,
     birthdate,
+    age: ageRaw,
+    height: heightRaw,
     city,
     state,
     goal,
@@ -247,6 +263,8 @@ export function normalizeStudentIntake(input: Record<string, IntakeValue>): Stud
     email,
     phone,
     birthdate,
+    age: optionalNumberInRange(ageRaw, 0, 130),
+    height: optionalNumberInRange(heightRaw, 0, 300),
     city,
     state,
     goal,

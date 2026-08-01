@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import type { StudentIntakePayload } from '@/lib/student-intake'
+import { mergeStudentProfileNotes } from '@/lib/student-profile-notes'
 
 const FORM_NOTES_MARKER = 'Dados completos do formulário:'
 
@@ -11,6 +12,23 @@ type ExistingStudent = {
 type StudentUpsertResult = {
   student: unknown
   action: 'created' | 'updated'
+}
+
+function isMissingAgeHeightColumn(error: unknown) {
+  if (!error || typeof error !== 'object') return false
+  const err = error as { code?: string; message?: string }
+  return (
+    err.code === 'PGRST204' &&
+    Boolean(err.message?.includes('age') || err.message?.includes('height'))
+  )
+}
+
+function withoutAgeHeight(payload: Record<string, unknown>) {
+  const { age, height, notes, ...rest } = payload
+  return {
+    ...rest,
+    notes: mergeStudentProfileNotes(typeof notes === 'string' ? notes : null, { age: age as number | null, height: height as number | null }),
+  }
 }
 
 function compactStudentPayload(
@@ -97,16 +115,36 @@ export async function upsertStudentFromIntake(payload: StudentIntakePayload): Pr
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (!isMissingAgeHeightColumn(error)) throw error
+      const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+        .from('Student')
+        .update({ ...withoutAgeHeight(updatePayload), updatedAt: now })
+        .eq('id', existing.id)
+        .select()
+        .single()
+      if (fallbackError) throw fallbackError
+      return { student: fallbackData, action: 'updated' }
+    }
     return { student: data, action: 'updated' }
   }
 
+  const insertPayload = compactStudentPayload(payload)
   const { data, error } = await supabaseAdmin
     .from('Student')
-    .insert({ ...compactStudentPayload(payload), createdAt: now, updatedAt: now })
+    .insert({ ...insertPayload, createdAt: now, updatedAt: now })
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (!isMissingAgeHeightColumn(error)) throw error
+    const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+      .from('Student')
+      .insert({ ...withoutAgeHeight(insertPayload), createdAt: now, updatedAt: now })
+      .select()
+      .single()
+    if (fallbackError) throw fallbackError
+    return { student: fallbackData, action: 'created' }
+  }
   return { student: data, action: 'created' }
 }

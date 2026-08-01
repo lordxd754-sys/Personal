@@ -7,6 +7,7 @@ import Textarea from '@/components/ui/Textarea'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import type { Student } from '@/types'
+import { parseStudentProfileNotes, stripStudentProfileNotes } from '@/lib/student-profile-notes'
 
 interface StudentFormProps {
   initial?: Partial<Student>
@@ -16,12 +17,15 @@ interface StudentFormProps {
 export default function StudentForm({ initial, studentId }: StudentFormProps) {
   const router = useRouter()
   const isEdit = !!studentId
+  const noteProfile = parseStudentProfileNotes(initial?.notes)
 
   const [form, setForm] = useState({
     name: initial?.name || '',
     email: initial?.email || '',
     phone: initial?.phone || '',
     birthdate: initial?.birthdate ? initial.birthdate.split('T')[0] : '',
+    age: initial?.age != null ? String(initial.age) : noteProfile.age != null ? String(noteProfile.age) : '',
+    height: initial?.height != null ? String(initial.height) : noteProfile.height != null ? String(noteProfile.height) : '',
     city: initial?.city || '',
     state: initial?.state || '',
     goal: initial?.goal || '',
@@ -30,7 +34,7 @@ export default function StudentForm({ initial, studentId }: StudentFormProps) {
     sessionDuration: String(initial?.sessionDuration ?? 60),
     restrictions: initial?.restrictions || '',
     equipment: initial?.equipment || '',
-    notes: initial?.notes || '',
+    notes: stripStudentProfileNotes(initial?.notes),
     mfitId: initial?.mfitId || '',
     status: initial?.status || 'ativo',
   })
@@ -52,6 +56,8 @@ export default function StudentForm({ initial, studentId }: StudentFormProps) {
       daysPerWeek: Number(form.daysPerWeek),
       sessionDuration: Number(form.sessionDuration),
       birthdate: form.birthdate || null,
+      age: form.age ? Number(form.age) : null,
+      height: form.height ? Number(form.height) : null,
       email: form.email || null,
       phone: form.phone || null,
       city: form.city || null,
@@ -88,6 +94,8 @@ export default function StudentForm({ initial, studentId }: StudentFormProps) {
           <Input id="email" label="E-mail" type="email" value={form.email} onChange={e => update('email', e.target.value)} />
           <Input id="phone" label="Telefone" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="(11) 99999-9999" />
           <Input id="birthdate" label="Data de nascimento" type="date" value={form.birthdate} onChange={e => update('birthdate', e.target.value)} />
+          <Input id="age" label="Idade" type="number" min={0} max={130} value={form.age} onChange={e => update('age', e.target.value)} placeholder="Ex: 32" />
+          <Input id="height" label="Altura (cm)" type="number" min={0} max={300} step="0.01" value={form.height} onChange={e => update('height', e.target.value)} placeholder="Ex: 178" />
           <Select
             id="status"
             label="Status"

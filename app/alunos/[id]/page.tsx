@@ -10,6 +10,7 @@ import Spinner from '@/components/ui/Spinner'
 import Textarea from '@/components/ui/Textarea'
 import Link from 'next/link'
 import { formatDate, formatDateTime, getInitials } from '@/lib/utils'
+import { parseStudentProfileNotes, stripStudentProfileNotes } from '@/lib/student-profile-notes'
 import type { Student, PhysicalAssessment, Photo, Workout, FollowUp } from '@/types'
 
 import {
@@ -55,10 +56,10 @@ const FORM_NOTES_MARKER = 'Dados completos do formulário:'
 function splitStudentNotes(notes: string | null | undefined) {
   if (!notes) return { regularNotes: '', formNotes: '' }
   const markerIndex = notes.indexOf(FORM_NOTES_MARKER)
-  if (markerIndex === -1) return { regularNotes: notes.trim(), formNotes: '' }
+  if (markerIndex === -1) return { regularNotes: stripStudentProfileNotes(notes), formNotes: '' }
 
   return {
-    regularNotes: notes.slice(0, markerIndex).replace(/^Observações do aluno:\s*/i, '').trim(),
+    regularNotes: stripStudentProfileNotes(notes.slice(0, markerIndex).replace(/^Observações do aluno:\s*/i, '').trim()),
     formNotes: notes.slice(markerIndex + FORM_NOTES_MARKER.length).trim(),
   }
 }
@@ -270,6 +271,9 @@ export default function AlunoPage() {
     return acc
   }, {})
   const { regularNotes, formNotes } = splitStudentNotes(student.notes)
+  const noteProfile = parseStudentProfileNotes(student.notes)
+  const studentAge = student.age ?? noteProfile.age
+  const studentHeight = student.height ?? noteProfile.height
 
   return (
     <AppLayout>
@@ -330,6 +334,8 @@ export default function AlunoPage() {
                   ['E-mail', student.email],
                   ['Telefone', student.phone],
                   ['Data de nascimento', student.birthdate ? formatDate(student.birthdate) : null],
+                  ['Idade', studentAge != null ? `${studentAge} anos` : null],
+                  ['Altura', studentHeight != null ? `${studentHeight} cm` : null],
                   [
                     'Cidade / Estado',
                     [student.city, student.state].filter(Boolean).join(' / ') || null,

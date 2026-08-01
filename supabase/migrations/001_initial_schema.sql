@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS "Student" (
   email TEXT,
   phone TEXT,
   birthdate DATE,
+  age INTEGER CHECK (age IS NULL OR age BETWEEN 0 AND 130),
+  height NUMERIC(5,2) CHECK (height IS NULL OR height BETWEEN 0 AND 300),
   city TEXT,
   state TEXT,
   goal TEXT,

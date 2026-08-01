@@ -3,9 +3,47 @@ import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { normalizeStudentIntake, readStudentIntakeRequest } from '@/lib/student-intake'
 import { upsertStudentFromIntake } from '@/lib/student-upsert'
+import { mergeStudentProfileNotes } from '@/lib/student-profile-notes'
 import { pick, sanitizeSearchQuery } from '@/lib/sanitize'
 
-const ALLOWED_STUDENT_FIELDS = ['name', 'email', 'phone', 'goal', 'level', 'status', 'notes', 'avatar', 'birthDate', 'weight', 'height', 'address'] as const
+const ALLOWED_STUDENT_FIELDS = [
+  'name',
+  'email',
+  'phone',
+  'birthdate',
+  'age',
+  'height',
+  'city',
+  'state',
+  'goal',
+  'level',
+  'daysPerWeek',
+  'sessionDuration',
+  'restrictions',
+  'equipment',
+  'notes',
+  'mfitId',
+  'status',
+] as const
+
+const STUDENT_APP_FIELDS = new Set<string>(ALLOWED_STUDENT_FIELDS)
+
+function isMissingAgeHeightColumn(error: unknown) {
+  if (!error || typeof error !== 'object') return false
+  const err = error as { code?: string; message?: string }
+  return err.code === 'PGRST204' && Boolean(err.message?.includes('age') || err.message?.includes('height'))
+}
+
+function withoutAgeHeight(payload: Record<string, unknown>) {
+  const { age, height, notes, ...rest } = payload
+  return {
+    ...rest,
+    notes: mergeStudentProfileNotes(typeof notes === 'string' ? notes : null, {
+      age: age as number | string | null,
+      height: height as number | string | null,
+    }),
+  }
+}
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
@@ -58,14 +96,15 @@ export async function POST(request: NextRequest) {
     const hasFormSignals = ['rawRequest', 'pretty', 'submissionID', 'submissionId', 'formID', 'formId'].some(
       (key) => Object.prototype.hasOwnProperty.call(bodyObject, key)
     )
-    const shouldNormalize = !contentType.includes('application/json') || hasFormSignals
+    const hasExternalFields = Object.keys(bodyObject).some((key) => !STUDENT_APP_FIELDS.has(key))
+    const shouldNormalize = !contentType.includes('application/json') || hasFormSignals || hasExternalFields
 
     if (shouldNormalize) {
       const { student } = await upsertStudentFromIntake(normalizeStudentIntake(bodyObject))
       return NextResponse.json(student, { status: 201 })
     }
 
-    const allowed = pick(bodyObject, [...ALLOWED_STUDENT_FIELDS])
+    const allowed = pick(bodyObject, [...ALLOWED_STUDENT_FIELDS]) as Record<string, unknown>
     const now = new Date().toISOString()
 
     if (!allowed.name || typeof allowed.name !== 'string' || allowed.name.trim().length < 2) {
@@ -77,7 +116,18 @@ export async function POST(request: NextRequest) {
       .insert({ ...allowed, createdAt: now, updatedAt: now })
       .select()
       .single()
-    if (error) return NextResponse.json({ error: 'Erro ao criar aluno' }, { status: 500 })
+
+    if (error) {
+      if (!isMissingAgeHeightColumn(error)) return NextResponse.json({ error: 'Erro ao criar aluno' }, { status: 500 })
+      const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+        .from('Student')
+        .insert({ ...withoutAgeHeight(allowed), createdAt: now, updatedAt: now })
+        .select()
+        .single()
+      if (fallbackError) return NextResponse.json({ error: 'Erro ao criar aluno' }, { status: 500 })
+      return NextResponse.json(fallbackData, { status: 201 })
+    }
+
     return NextResponse.json(data, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
