@@ -9,8 +9,8 @@ import Textarea from '@/components/ui/Textarea'
 import Spinner from '@/components/ui/Spinner'
 import { calculateAssessment, classifyBMI } from '@/lib/assessment'
 import { errorMessage } from '@/lib/error-message'
-
-interface Student { id: string; name: string; birthdate: string | null }
+import { parseStudentProfileNotes } from '@/lib/student-profile-notes'
+import type { Student } from '@/types'
 
 const DOBRAS = [
   {
@@ -116,8 +116,15 @@ function NovaAvaliacaoForm() {
     fetch(`/api/students/${preselectedId}`)
       .then(r => r.json())
       .then((s: Student) => {
+        const noteProfile = parseStudentProfileNotes(s.notes)
+        const savedAge = s.age ?? noteProfile.age
+        const savedHeight = s.height ?? noteProfile.height
         setStudent(s)
-        setForm(f => ({ ...f, age: String(computeAge(s.birthdate)) }))
+        setForm(f => ({
+          ...f,
+          age: savedAge != null ? String(savedAge) : String(computeAge(s.birthdate)),
+          height: savedHeight != null ? String(savedHeight) : f.height,
+        }))
       })
       .finally(() => setLoadingStudent(false))
   }, [preselectedId])
