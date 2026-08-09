@@ -18,6 +18,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isSubPage = !ROOT_PATHS.includes(pathname)
 
   useEffect(() => {
+    function handleDashboardMetrics(event: Event) {
+      const metrics = (event as CustomEvent<{ overdueFollowUp?: number }>).detail
+      if (metrics?.overdueFollowUp !== undefined) setOverdueCount(metrics.overdueFollowUp)
+    }
+
+    window.addEventListener('orquestra-dashboard-metrics', handleDashboardMetrics)
+    return () => window.removeEventListener('orquestra-dashboard-metrics', handleDashboardMetrics)
+  }, [])
+
+  useEffect(() => {
+    if (pathname === '/dashboard') return
     fetch('/api/dashboard')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -26,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }
       })
       .catch(() => {})
-  }, [])
+  }, [pathname])
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface">

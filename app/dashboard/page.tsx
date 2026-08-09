@@ -1,269 +1,367 @@
 'use client'
-import { useState, useEffect } from 'react'
-import AppLayout from '@/components/layout/AppLayout'
-import Spinner from '@/components/ui/Spinner'
-import { daysSince, formatDateTime } from '@/lib/utils'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import AppLayout from '@/components/layout/AppLayout'
+import { daysSince, formatDateTime, getInitials } from '@/lib/utils'
+
+type MetricKey = 'totalActive' | 'withoutAssessment' | 'overdueFollowUp' | 'withoutWorkout'
 
 interface DashboardData {
-  metrics: {
-    totalActive: number
-    withoutAssessment: number
-    overdueFollowUp: number
-    withoutWorkout: number
-  }
-  urgentStudents: any[]
+  metrics: Record<MetricKey, number>
+  urgentStudents: Array<{
+    id: string
+    name: string
+    goal: string | null
+    level: string | null
+    lastContactAt: string | null
+    daysSinceContact?: number
+  }>
   recentActivity: {
-    executions: any[]
-    followUps: any[]
-    assessments: any[]
+    executions: Array<{
+      id: string
+      startedAt: string | null
+      finishedAt: string | null
+      Student?: { name?: string | null } | null
+      Workout?: { title?: string | null } | null
+      WorkoutSession?: { name?: string | null } | null
+    }>
+    followUps: Array<{
+      id: string
+      sentAt: string | null
+      channel: string | null
+      Student?: { name?: string | null } | null
+    }>
+    assessments: Array<{
+      id: string
+      assessedAt: string | null
+      bodyFatPercent: number | null
+      bmi: number | null
+      Student?: { name?: string | null } | null
+    }>
   }
 }
 
-function MetricCard({
+const emptyMetrics: DashboardData['metrics'] = {
+  totalActive: 0,
+  withoutAssessment: 0,
+  overdueFollowUp: 0,
+  withoutWorkout: 0,
+}
+
+const quickActions = [
+  { href: '/alunos/novo', icon: 'person_add', label: 'Novo aluno', detail: 'Cadastrar perfil' },
+  { href: '/alunos', icon: 'groups', label: 'Alunos', detail: 'Ver cadastros' },
+  { href: '/treinos', icon: 'fitness_center', label: 'Treinos', detail: 'Montar ou revisar' },
+  { href: '/acompanhamento', icon: 'forum', label: 'Follow-up', detail: 'Mensagens pendentes' },
+]
+
+function DashboardSkeleton() {
+  return (
+    <AppLayout>
+      <div className="p-4 md:p-8 xl:p-10 max-w-[1480px] mx-auto space-y-6 animate-pulse">
+        <div className="h-24 rounded-lg bg-white/[0.04] border border-white/10" />
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-36 rounded-lg bg-white/[0.04] border border-white/10" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.65fr] gap-4">
+          <div className="h-96 rounded-lg bg-white/[0.04] border border-white/10" />
+          <div className="h-96 rounded-lg bg-white/[0.04] border border-white/10" />
+        </div>
+      </div>
+    </AppLayout>
+  )
+}
+
+function MetricTile({
   icon,
-  label,
+  title,
   value,
-  badge,
-  badgeVariant = 'default',
-  glowColor = 'primary',
+  description,
+  tone = 'neutral',
+  progress,
 }: {
   icon: string
-  label: string
+  title: string
   value: number
-  badge?: string
-  badgeVariant?: 'default' | 'error' | 'secondary'
-  glowColor?: 'primary' | 'secondary' | 'error'
+  description: string
+  tone?: 'neutral' | 'good' | 'warn' | 'danger'
+  progress?: number
 }) {
-  const glowMap = {
-    primary: 'bg-surface-card group-hover:border-primary-container/40 border-surface-border',
-    secondary: 'bg-surface-card group-hover:border-secondary/40 border-surface-border',
-    error: 'bg-surface-card border-error/20 group-hover:border-error/35',
+  const toneClasses = {
+    neutral: 'text-primary border-primary/20 bg-primary/10',
+    good: 'text-success border-success/20 bg-success/10',
+    warn: 'text-warning border-warning/20 bg-warning/10',
+    danger: 'text-error border-error/25 bg-error/10',
   }
-  const iconColorMap = {
-    primary: 'text-primary',
-    secondary: 'text-secondary',
-    error: 'text-error',
-  }
-  const badgeStyles = {
-    default: 'bg-primary-container/15 text-primary',
-    error: 'bg-error/20 text-error',
-    secondary: 'bg-secondary/20 text-secondary',
-  }
-  const glowBg = {
-    primary: 'bg-primary-container/10 group-hover:bg-primary-container/20',
-    secondary: 'bg-secondary/5 group-hover:bg-secondary/10',
-    error: 'bg-error/10 group-hover:bg-error/15',
+  const barClasses = {
+    neutral: 'bg-primary',
+    good: 'bg-success',
+    warn: 'bg-warning',
+    danger: 'bg-error',
   }
 
   return (
-    <div className={`bg-surface-card backdrop-blur-xl border ${glowMap[glowColor]} rounded-lg p-6 flex flex-col justify-between relative overflow-hidden group transition-all duration-200 hover:shadow-[0_0_18px_rgba(124,58,237,0.14)]`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center">
-          <span className={`material-symbols-outlined ${iconColorMap[glowColor]}`}>{icon}</span>
+    <div className="rounded-lg border border-white/10 bg-surface-card p-4 md:p-5 min-h-36">
+      <div className="flex items-start justify-between gap-3">
+        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${toneClasses[tone]}`}>
+          <span className="material-symbols-outlined text-[22px]">{icon}</span>
         </div>
-        {badge && (
-          <span className={`${badgeStyles[badgeVariant]} font-mono font-semibold uppercase text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1`}>
-            {badgeVariant === 'error' && (
-              <span className="material-symbols-outlined text-[12px]">warning</span>
-            )}
-            {badgeVariant === 'secondary' && (
-              <span className="material-symbols-outlined text-[12px]">bolt</span>
-            )}
-            {badgeVariant === 'default' && (
-              <span className="material-symbols-outlined text-[12px]">trending_up</span>
-            )}
-            {badge}
-          </span>
-        )}
+        <span className="font-mono text-[11px] text-text-muted uppercase">Agora</span>
       </div>
-      <div>
-        <p className="font-mono text-label-caps text-text-muted mb-1 uppercase">{label}</p>
-        <p className="text-[36px] leading-tight text-on-surface font-bold">{value}</p>
+      <div className="mt-5">
+        <p className="font-mono text-label-caps uppercase text-text-muted">{title}</p>
+        <p className="text-[34px] leading-none font-bold text-on-surface mt-1">{value}</p>
+        <p className="text-body-sm text-on-surface-variant mt-2">{description}</p>
       </div>
-      <div className={`absolute -bottom-10 -right-10 w-32 h-32 ${glowBg[glowColor]} blur-3xl rounded-full transition-all`} />
+      {progress != null && (
+        <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden mt-4">
+          <div className={`h-full rounded-full ${barClasses[tone]}`} style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }} />
+        </div>
+      )}
     </div>
   )
 }
 
-function UrgencyDot({ days }: { days: number }) {
-  if (days > 15) return <span className="w-2 h-2 rounded-full bg-error inline-block shrink-0" />
-  if (days >= 13) return <span className="w-2 h-2 rounded-full bg-warning inline-block shrink-0" />
-  return <span className="w-2 h-2 rounded-full bg-success inline-block shrink-0" />
+function SectionHeader({ title, actionHref, actionLabel }: { title: string; actionHref?: string; actionLabel?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 mb-3">
+      <h3 className="text-title-md text-on-surface">{title}</h3>
+      {actionHref && actionLabel && (
+        <Link href={actionHref} className="font-mono text-label-caps text-secondary hover:text-secondary-container transition-colors">
+          {actionLabel}
+        </Link>
+      )}
+    </div>
+  )
 }
 
-const activityIconMap: Record<string, { icon: string; color: string }> = {
-  execution: { icon: 'done_all', color: 'text-primary' },
-  followup: { icon: 'forum', color: 'text-secondary' },
-  assessment: { icon: 'monitoring', color: 'text-text-muted' },
-  student: { icon: 'person_add', color: 'text-text-muted' },
+function AttentionList({ students }: { students: DashboardData['urgentStudents'] }) {
+  if (students.length === 0) {
+    return (
+      <div className="rounded-lg border border-white/10 bg-surface-card p-8 text-center">
+        <span className="material-symbols-outlined text-4xl text-success">check_circle</span>
+        <p className="text-label-md text-on-surface mt-3">Acompanhamento em dia</p>
+        <p className="text-body-sm text-text-muted mt-1">Nenhum aluno passou do limite de contato.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-surface-card overflow-hidden">
+      {students.slice(0, 7).map((student) => {
+        const days = student.daysSinceContact ?? daysSince(student.lastContactAt)
+        const isCritical = days > 15
+        return (
+          <Link key={student.id} href={`/alunos/${student.id}`} className="grid grid-cols-[auto_1fr_auto] gap-3 items-center p-4 border-b border-white/5 last:border-b-0 hover:bg-white/[0.04] transition-colors">
+            <div className={`w-11 h-11 rounded-lg border flex items-center justify-center font-bold ${isCritical ? 'border-error/25 bg-error/10 text-error' : 'border-warning/25 bg-warning/10 text-warning'}`}>
+              {getInitials(student.name)}
+            </div>
+            <div className="min-w-0">
+              <p className="text-label-md text-on-surface truncate">{student.name}</p>
+              <p className="text-body-sm text-text-muted truncate">{student.goal || 'Sem objetivo registrado'}</p>
+            </div>
+            <div className="text-right">
+              <p className={`font-mono text-label-caps ${isCritical ? 'text-error' : 'text-warning'}`}>{days}d</p>
+              <p className="text-[11px] text-text-muted uppercase">sem contato</p>
+            </div>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+function ActivityFeed({ data }: { data: DashboardData['recentActivity'] }) {
+  const items = [
+    ...data.executions.map((item) => ({
+      id: `execution-${item.id}`,
+      icon: 'task_alt',
+      tone: 'text-success',
+      title: `${item.Student?.name || 'Aluno'} concluiu um treino`,
+      detail: item.WorkoutSession?.name || item.Workout?.title || 'Sessão registrada',
+      time: item.finishedAt || item.startedAt,
+    })),
+    ...data.followUps.map((item) => ({
+      id: `followup-${item.id}`,
+      icon: 'forum',
+      tone: 'text-secondary',
+      title: `Follow-up para ${item.Student?.name || 'aluno'}`,
+      detail: item.channel || 'Mensagem enviada',
+      time: item.sentAt,
+    })),
+    ...data.assessments.map((item) => ({
+      id: `assessment-${item.id}`,
+      icon: 'monitoring',
+      tone: 'text-primary',
+      title: `Avaliação de ${item.Student?.name || 'aluno'}`,
+      detail: item.bodyFatPercent != null ? `${item.bodyFatPercent}% gordura corporal` : item.bmi != null ? `IMC ${item.bmi}` : 'Resultado salvo',
+      time: item.assessedAt,
+    })),
+  ]
+    .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
+    .slice(0, 8)
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-lg border border-white/10 bg-surface-card p-8 text-center">
+        <span className="material-symbols-outlined text-4xl text-text-muted">history</span>
+        <p className="text-body-sm text-text-muted mt-3">Nenhuma atividade recente</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-surface-card p-4">
+      <div className="space-y-1">
+        {items.map((item) => (
+          <div key={item.id} className="grid grid-cols-[auto_1fr] gap-3 rounded-lg p-3 hover:bg-white/[0.04] transition-colors">
+            <div className={`w-9 h-9 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center ${item.tone}`}>
+              <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-body-sm text-on-surface truncate">{item.title}</p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+                <span className="text-label-sm text-text-muted">{item.detail}</span>
+                <span className="text-text-muted/50">•</span>
+                <time className="font-mono text-label-sm text-text-muted">{formatDateTime(item.time)}</time>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d && d.metrics) setData(d)
-        setLoading(false)
+    const controller = new AbortController()
+    fetch('/api/dashboard', { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Erro ao carregar dashboard')))
+      .then((payload: DashboardData) => {
+        setData(payload)
+        setError('')
+        window.dispatchEvent(new CustomEvent('orquestra-dashboard-metrics', { detail: payload.metrics }))
       })
-      .catch(() => setLoading(false))
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        setError(err instanceof Error ? err.message : String(err))
+      })
+      .finally(() => setLoading(false))
+
+    return () => controller.abort()
   }, [])
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <Spinner className="text-4xl text-primary" />
-        </div>
-      </AppLayout>
-    )
-  }
+  const metrics = data?.metrics || emptyMetrics
+  const activeWorkouts = Math.max(metrics.totalActive - metrics.withoutWorkout, 0)
+  const assessmentCoverage = metrics.totalActive > 0
+    ? Math.round(((metrics.totalActive - metrics.withoutAssessment) / metrics.totalActive) * 100)
+    : 0
+  const workoutCoverage = metrics.totalActive > 0
+    ? Math.round((activeWorkouts / metrics.totalActive) * 100)
+    : 0
 
-  const metrics = data?.metrics
-  const activeWorkouts = metrics ? metrics.totalActive - metrics.withoutWorkout : 0
+  const operationStatus = useMemo(() => {
+    if (metrics.overdueFollowUp > 0) return { label: 'Atenção', tone: 'text-error', icon: 'priority_high' }
+    if (metrics.withoutWorkout > 0 || metrics.withoutAssessment > 0) return { label: 'Ajustes', tone: 'text-warning', icon: 'tune' }
+    return { label: 'Em dia', tone: 'text-success', icon: 'verified' }
+  }, [metrics])
 
-  const recentItems = [
-    ...(data?.recentActivity?.executions || []).map((e: any) => ({
-      id: `exec-${e.id}`,
-      type: 'execution',
-      text: <><span className="font-bold">{e.Student?.name}</span> concluiu o treino</>,
-      time: formatDateTime(e.executedAt),
-    })),
-    ...(data?.recentActivity?.followUps || []).map((f: any) => ({
-      id: `fu-${f.id}`,
-      type: 'followup',
-      text: <>Follow-up enviado para <span className="font-bold">{f.Student?.name}</span></>,
-      time: formatDateTime(f.sentAt),
-    })),
-    ...(data?.recentActivity?.assessments || []).map((a: any) => ({
-      id: `as-${a.id}`,
-      type: 'assessment',
-      text: <>Avaliação registrada: <span className="font-bold">{a.Student?.name}</span></>,
-      time: formatDateTime(a.date),
-    })),
-  ].slice(0, 6)
+  if (loading) return <DashboardSkeleton />
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-12 max-w-[1440px] mx-auto space-y-8 md:space-y-10">
-        {/* Page header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2 md:mt-0">
-          <div>
-            <h2 className="text-headline-lg-mobile md:text-display-lg text-on-surface">Visão Geral</h2>
-            <p className="text-body-md text-on-surface-variant mt-2">Bem-vindo de volta. Aqui está o resumo do seu dia.</p>
-          </div>
-          <Link href="/agenda" className="self-start md:self-auto px-4 py-2 bg-white/[0.03] rounded-lg border border-white/10 text-on-surface font-mono text-label-caps hover:bg-white/[0.06] hover:border-primary-container/40 transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-            Hoje
-          </Link>
-        </div>
+      <div className="p-4 md:p-8 xl:p-10 max-w-[1480px] mx-auto space-y-6">
+        <section className="rounded-lg border border-white/10 bg-surface-card p-5 md:p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-center gap-4 min-w-0">
+              <img
+                src="/orquestra-mark.png"
+                alt="Orquestra"
+                className="w-14 h-14 rounded-lg object-cover border border-secondary/40 shrink-0"
+              />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-headline-lg-mobile md:text-headline-lg text-on-surface">Dashboard Orquestra</h1>
+                  <span className={`hidden sm:inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[11px] uppercase ${operationStatus.tone}`}>
+                    <span className="material-symbols-outlined text-[14px]">{operationStatus.icon}</span>
+                    {operationStatus.label}
+                  </span>
+                </div>
+                <p className="text-body-sm md:text-body-md text-on-surface-variant mt-1">Resumo rápido dos alunos, treinos e acompanhamentos.</p>
+              </div>
+            </div>
 
-        {/* Metrics bento grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <MetricCard
+            <div className="grid grid-cols-2 sm:flex gap-2">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  title={action.detail}
+                  className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 hover:bg-white/[0.06] hover:border-secondary/30 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-secondary align-middle mr-2">{action.icon}</span>
+                  <span className="font-mono text-label-caps text-on-surface">{action.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+          {error && (
+            <p className="mt-4 rounded-lg border border-error/25 bg-error/10 px-4 py-3 text-body-sm text-error">{error}</p>
+          )}
+        </section>
+
+        <section className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+          <MetricTile
             icon="groups"
-            label="Total de Alunos"
-            value={metrics?.totalActive ?? 0}
-            badge="+12%"
-            badgeVariant="default"
-            glowColor="primary"
+            title="Alunos ativos"
+            value={metrics.totalActive}
+            description="Base atual em acompanhamento."
+            progress={100}
           />
-          <MetricCard
+          <MetricTile
             icon="fitness_center"
-            label="Treinos Ativos"
-            value={activeWorkouts > 0 ? activeWorkouts : (metrics?.totalActive ?? 0)}
-            badge="Ativos"
-            badgeVariant="secondary"
-            glowColor="secondary"
+            title="Com treino"
+            value={activeWorkouts}
+            description={`${workoutCoverage}% dos ativos com treino pronto.`}
+            tone={metrics.withoutWorkout > 0 ? 'warn' : 'good'}
+            progress={workoutCoverage}
           />
-          <MetricCard
+          <MetricTile
             icon="monitoring"
-            label="Acompanhamentos Pendentes"
-            value={metrics?.overdueFollowUp ?? 0}
-            badge={metrics?.overdueFollowUp ? 'Requer Atenção' : 'Em dia'}
-            badgeVariant={metrics?.overdueFollowUp ? 'error' : 'default'}
-            glowColor="error"
+            title="Sem avaliação"
+            value={metrics.withoutAssessment}
+            description={`${assessmentCoverage}% já possuem avaliação.`}
+            tone={metrics.withoutAssessment > 0 ? 'warn' : 'good'}
+            progress={assessmentCoverage}
           />
-        </div>
+          <MetricTile
+            icon="notifications_active"
+            title="Follow-ups"
+            value={metrics.overdueFollowUp}
+            description={metrics.overdueFollowUp > 0 ? 'Precisam de contato agora.' : 'Nenhum atraso crítico.'}
+            tone={metrics.overdueFollowUp > 0 ? 'danger' : 'good'}
+            progress={metrics.totalActive > 0 ? Math.round(((metrics.totalActive - metrics.overdueFollowUp) / metrics.totalActive) * 100) : 100}
+          />
+        </section>
 
-        {/* Main split */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Urgent students */}
-          <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-title-md text-on-surface">Próximas Ações</h3>
-              <Link href="/alunos" className="font-mono text-secondary text-label-caps hover:underline">
-                Ver todos
-              </Link>
-            </div>
-            <div className="bg-surface-card backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden">
-              {!data?.urgentStudents.length ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                  <span className="material-symbols-outlined text-4xl text-success mb-3">check_circle</span>
-                  <p className="text-body-sm text-on-surface font-medium">Nenhum aluno precisa de atenção urgente</p>
-                  <p className="text-label-sm text-text-muted mt-1">Tudo em dia!</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-surface-border">
-                  {data.urgentStudents.slice(0, 5).map((s: any) => {
-                    const days = daysSince(s.lastContactAt)
-                    return (
-                      <Link key={s.id} href={`/alunos/${s.id}`}>
-                        <div className="p-4 flex items-center gap-4 hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                          <div className="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold text-label-sm shrink-0 border border-primary-container/25">
-                            {s.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-label-md text-on-surface truncate">{s.name}</p>
-                            <p className="text-body-sm text-text-muted truncate">{s.goal || 'Sem objetivo definido'}</p>
-                          </div>
-                          <div className="hidden sm:flex items-center gap-2">
-                            <UrgencyDot days={days} />
-                            <span className="text-label-sm text-text-muted">{days}d sem contato</span>
-                            <span className="material-symbols-outlined text-text-muted text-xl group-hover:text-primary transition-colors">chevron_right</span>
-                          </div>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right: Recent activity */}
+        <section className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-4">
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-title-md text-on-surface">Atividades Recentes</h3>
-            </div>
-            <div className="bg-surface-card backdrop-blur-xl border border-white/10 rounded-lg p-4">
-              {recentItems.length === 0 ? (
-                <p className="text-body-sm text-text-muted text-center py-6">Nenhuma atividade recente</p>
-              ) : (
-                <div className="space-y-5 relative before:absolute before:left-[1.125rem] before:top-0 before:h-full before:w-px before:bg-gradient-to-b before:from-transparent before:via-surface-border before:to-transparent">
-                  {recentItems.map((item) => {
-                    const { icon, color } = activityIconMap[item.type] || activityIconMap.execution
-                    return (
-                      <div key={item.id} className="relative flex items-start gap-4">
-                        <div className={`w-9 h-9 rounded-full border border-white/10 bg-surface-card ${color} flex items-center justify-center shrink-0 z-10`}>
-                          <span className="material-symbols-outlined text-[16px]">{icon}</span>
-                        </div>
-                        <div className="pt-1 min-w-0">
-                          <p className="text-body-sm text-on-surface leading-snug">{item.text}</p>
-                          <time className="font-mono text-label-sm text-text-muted">{item.time}</time>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
+            <SectionHeader title="Fila de Atenção" actionHref="/acompanhamento" actionLabel="Acompanhar" />
+            <AttentionList students={data?.urgentStudents || []} />
           </div>
-        </div>
+
+          <div>
+            <SectionHeader title="Atividade Recente" actionHref="/alunos" actionLabel="Abrir alunos" />
+            <ActivityFeed data={data?.recentActivity || { executions: [], followUps: [], assessments: [] }} />
+          </div>
+        </section>
       </div>
     </AppLayout>
   )
