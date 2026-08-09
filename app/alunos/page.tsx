@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
-import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { getInitials, daysSince } from '@/lib/utils'
 import type { Student } from '@/types'
@@ -25,19 +24,35 @@ type FilterTab = 'todos' | 'ativo' | 'inativo'
 export default function AlunosPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [tab, setTab] = useState<FilterTab>('todos')
 
   useEffect(() => {
-    setLoading(true)
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250)
+    return () => window.clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    if (students.length === 0) setLoading(true)
+    else setRefreshing(true)
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
+    params.set('view', 'list')
+    if (debouncedSearch) params.set('search', debouncedSearch)
     if (tab !== 'todos') params.set('status', tab)
-    fetch(`/api/students?${params}`)
+    fetch(`/api/students?${params}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { setStudents(Array.isArray(d) ? d : []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [search, tab])
+      .then(d => { setStudents(Array.isArray(d) ? d : []) })
+      .catch(() => {})
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setLoading(false)
+        setRefreshing(false)
+      })
+    return () => controller.abort()
+  }, [debouncedSearch, tab])
 
   const activeCount = students.filter(s => s.status === 'ativo').length
   const inactiveCount = students.filter(s => s.status === 'inativo' || s.status === 'pausado').length
@@ -80,6 +95,12 @@ export default function AlunosPage() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
+          {refreshing && (
+            <div className="flex items-center gap-2 text-text-muted font-mono text-label-caps px-1">
+              <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+              Atualizando
+            </div>
+          )}
           <div className="flex gap-2 overflow-x-auto pb-1">
             {([
               ['todos', `Todos (${students.length})`],
@@ -103,8 +124,10 @@ export default function AlunosPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Spinner className="text-4xl text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map(item => (
+              <div key={item} className="h-48 rounded-lg border border-white/10 bg-white/[0.04] animate-pulse" />
+            ))}
           </div>
         ) : students.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">

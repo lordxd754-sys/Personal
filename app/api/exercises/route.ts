@@ -14,9 +14,13 @@ export async function GET(request: NextRequest) {
   const level = searchParams.get('level')
   const type = searchParams.get('type')
   const search = searchParams.get('search')
+  const view = searchParams.get('view')
 
   try {
-    let query = supabaseAdmin.from('Exercise').select('*').order('name', { ascending: true })
+    const fields = view === 'list'
+      ? 'id, name, muscleGroup, equipment, level, type, isCustom'
+      : '*'
+    let query = supabaseAdmin.from('Exercise').select(fields).order('name', { ascending: true })
     if (muscleGroup && muscleGroup !== 'Todos') query = query.eq('muscleGroup', muscleGroup)
     if (equipment && equipment !== 'Todos') query = query.eq('equipment', equipment)
     if (level && level !== 'Todos') query = query.eq('level', level)

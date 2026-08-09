@@ -5,7 +5,6 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Select from '@/components/ui/Select'
-import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import { formatDate, getInitials } from '@/lib/utils'
 
@@ -25,16 +24,25 @@ const workoutStatusMap: Record<string, { label: string; variant: 'default' | 'su
 export default function TreinosPage() {
   const [workouts, setWorkouts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
-    setLoading(true)
+    const controller = new AbortController()
+    if (workouts.length === 0) setLoading(true)
+    else setRefreshing(true)
     const params = new URLSearchParams()
     if (statusFilter !== 'all') params.set('status', statusFilter)
-    fetch(`/api/workouts?${params}`)
+    fetch(`/api/workouts?${params}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { setWorkouts(Array.isArray(d) ? d : []); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then(d => { setWorkouts(Array.isArray(d) ? d : []) })
+      .catch(() => {})
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setLoading(false)
+        setRefreshing(false)
+      })
+    return () => controller.abort()
   }, [statusFilter])
 
   return (
@@ -55,10 +63,20 @@ export default function TreinosPage() {
 
         <div className="flex gap-3 mb-6">
           <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} options={STATUS_OPTIONS} className="w-48" />
+          {refreshing && (
+            <div className="flex items-center gap-2 text-text-muted font-mono text-label-caps">
+              <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+              Atualizando
+            </div>
+          )}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16"><Spinner className="text-4xl" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2, 3, 4, 5].map(item => (
+              <div key={item} className="h-44 rounded-lg border border-white/10 bg-white/[0.04] animate-pulse" />
+            ))}
+          </div>
         ) : workouts.length === 0 ? (
           <Card className="text-center py-16">
             <span className="material-symbols-outlined text-5xl text-text-secondary block mb-2">fitness_center</span>

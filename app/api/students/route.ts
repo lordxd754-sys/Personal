@@ -54,9 +54,13 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status')
   const level = searchParams.get('level')
   const orderBy = searchParams.get('orderBy') || 'name'
+  const view = searchParams.get('view')
 
   try {
-    let query = supabaseAdmin.from('Student').select('*')
+    const fields = view === 'list'
+      ? 'id, name, email, phone, goal, level, status, lastContactAt, createdAt'
+      : '*'
+    let query = supabaseAdmin.from('Student').select(fields)
 
     if (search) {
       const safeSearch = sanitizeSearchQuery(search)

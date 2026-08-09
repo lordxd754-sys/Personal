@@ -1,12 +1,11 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import Spinner from '@/components/ui/Spinner'
 import Link from 'next/link'
 import type { Exercise } from '@/types'
 
@@ -45,27 +44,45 @@ const muscleGroupColors: Record<string, string> = {
 export default function ExerciciosPage() {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [muscleGroup, setMuscleGroup] = useState('Todos')
   const [equipment, setEquipment] = useState('Todos')
   const [level, setLevel] = useState('Todos')
   const [type, setType] = useState('Todos')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const hasLoadedRef = useRef(false)
 
   const fetchExercises = useCallback(() => {
-    setLoading(true)
+    const controller = new AbortController()
+    if (!hasLoadedRef.current) setLoading(true)
+    else setRefreshing(true)
     const params = new URLSearchParams()
+    params.set('view', 'list')
     if (muscleGroup !== 'Todos') params.set('muscleGroup', muscleGroup)
     if (equipment !== 'Todos') params.set('equipment', equipment)
     if (level !== 'Todos') params.set('level', level)
     if (type !== 'Todos') params.set('type', type)
-    if (search) params.set('search', search)
-    fetch(`/api/exercises?${params}`)
+    if (debouncedSearch) params.set('search', debouncedSearch)
+    fetch(`/api/exercises?${params}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { setExercises(Array.isArray(d) ? d : []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [muscleGroup, equipment, level, type, search])
+      .then(d => { setExercises(Array.isArray(d) ? d : []) })
+      .catch(() => {})
+      .finally(() => {
+        if (controller.signal.aborted) return
+        hasLoadedRef.current = true
+        setLoading(false)
+        setRefreshing(false)
+      })
+    return () => controller.abort()
+  }, [muscleGroup, equipment, level, type, debouncedSearch])
 
-  useEffect(() => { fetchExercises() }, [fetchExercises])
+  useEffect(() => fetchExercises(), [fetchExercises])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250)
+    return () => window.clearTimeout(timer)
+  }, [search])
 
   return (
     <AppLayout>
@@ -108,10 +125,20 @@ export default function ExerciciosPage() {
           <Select value={equipment} onChange={e => setEquipment(e.target.value)} options={EQUIPMENT_OPTIONS} className="sm:w-48" />
           <Select value={level} onChange={e => setLevel(e.target.value)} options={LEVEL_OPTIONS} className="sm:w-44" />
           <Select value={type} onChange={e => setType(e.target.value)} options={TYPE_OPTIONS} className="sm:w-40" />
+          {refreshing && (
+            <div className="flex items-center gap-2 text-text-muted font-mono text-label-caps">
+              <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+              Atualizando
+            </div>
+          )}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16"><Spinner className="text-4xl" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map(item => (
+              <div key={item} className="h-40 rounded-lg border border-white/10 bg-white/[0.04] animate-pulse" />
+            ))}
+          </div>
         ) : exercises.length === 0 ? (
           <Card className="text-center py-16">
             <span className="material-symbols-outlined text-5xl text-text-secondary block mb-2">fitness_center</span>

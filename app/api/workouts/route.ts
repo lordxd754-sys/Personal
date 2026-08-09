@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     let query = supabaseAdmin
       .from('Workout')
-      .select('*, Student(id, name), WorkoutSession(id, name, WorkoutExercise(id, name))')
+      .select('id, title, status, createdAt, studentId, Student(id, name), WorkoutSession(id, name, WorkoutExercise(id, name))')
       .order('createdAt', { ascending: false })
     if (status && status !== 'all') query = query.eq('status', status)
     const { data, error } = await query

@@ -29,14 +29,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (pathname === '/dashboard') return
-    fetch('/api/dashboard')
+    const controller = new AbortController()
+    fetch('/api/followups/overdue-count', { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.metrics?.overdueFollowUp !== undefined) {
-          setOverdueCount(d.metrics.overdueFollowUp)
+        if (controller.signal.aborted) return
+        if (d?.overdueFollowUp !== undefined) {
+          setOverdueCount(d.overdueFollowUp)
         }
       })
       .catch(() => {})
+    return () => controller.abort()
   }, [pathname])
 
   return (
