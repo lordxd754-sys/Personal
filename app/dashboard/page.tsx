@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import AppLayout from '@/components/layout/AppLayout'
 import { daysSince, formatDateTime, getInitials } from '@/lib/utils'
@@ -238,11 +238,16 @@ function ActivityFeed({ data }: { data: DashboardData['recentActivity'] }) {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
+  const hasLoadedRef = useRef(false)
 
-  useEffect(() => {
+  const loadDashboard = useCallback((showLoading = false) => {
     const controller = new AbortController()
-    fetch('/api/dashboard', { signal: controller.signal })
+    if (showLoading || !hasLoadedRef.current) setLoading(true)
+    else setRefreshing(true)
+
+    fetch('/api/dashboard', { signal: controller.signal, cache: 'no-store' })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('Erro ao carregar dashboard')))
       .then((payload: DashboardData) => {
         setData(payload)
@@ -253,10 +258,33 @@ export default function DashboardPage() {
         if (err instanceof DOMException && err.name === 'AbortError') return
         setError(err instanceof Error ? err.message : String(err))
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (controller.signal.aborted) return
+        hasLoadedRef.current = true
+        setLoading(false)
+        setRefreshing(false)
+      })
 
-    return () => controller.abort()
+    return controller
   }, [])
+
+  useEffect(() => {
+    const controller = loadDashboard(true)
+    return () => controller.abort()
+  }, [loadDashboard])
+
+  useEffect(() => {
+    function refreshWhenVisible() {
+      if (document.visibilityState === 'visible') loadDashboard()
+    }
+
+    window.addEventListener('focus', refreshWhenVisible)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => {
+      window.removeEventListener('focus', refreshWhenVisible)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+    }
+  }, [loadDashboard])
 
   const metrics = data?.metrics || emptyMetrics
   const activeWorkouts = Math.max(metrics.totalActive - metrics.withoutWorkout, 0)
@@ -299,6 +327,15 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:flex gap-2">
+              <button
+                type="button"
+                onClick={() => loadDashboard()}
+                disabled={refreshing}
+                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 hover:bg-white/[0.06] hover:border-secondary/30 transition-colors disabled:opacity-60"
+              >
+                <span className={`material-symbols-outlined text-[18px] text-secondary align-middle mr-2 ${refreshing ? 'animate-spin' : ''}`}>refresh</span>
+                <span className="font-mono text-label-caps text-on-surface">Atualizar</span>
+              </button>
               {quickActions.map((action) => (
                 <Link
                   key={action.href}

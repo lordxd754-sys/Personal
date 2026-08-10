@@ -3,6 +3,8 @@ import { getSession } from '@/lib/get-session'
 import { supabaseAdmin } from '@/lib/supabase'
 import { daysSince } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
@@ -81,7 +83,7 @@ export async function GET() {
       },
     }, {
       headers: {
-        'Cache-Control': 'private, max-age=20, stale-while-revalidate=60',
+        'Cache-Control': 'no-store, max-age=0',
       },
     })
   } catch (err: unknown) {
