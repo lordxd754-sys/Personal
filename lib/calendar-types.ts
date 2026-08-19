@@ -8,6 +8,8 @@ export interface CalendarEventInput {
   endDate?: string
   allDay?: boolean
   color?: string
+  repeatWeekly?: boolean
+  repeatWeeks?: number
 }
 
 export interface CalendarEvent {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/get-session'
-import { fetchCalendarEvents, createCalendarEvent } from '@/lib/calendar'
+import { fetchCalendarEvents, createCalendarEvents } from '@/lib/calendar'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const event = await createCalendarEvent(session.user.id, body)
-    return NextResponse.json(event)
+    const events = await createCalendarEvents(session.user.id, body)
+    return NextResponse.json(body.repeatWeekly ? events : events[0])
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }

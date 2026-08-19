@@ -64,6 +64,54 @@ export async function createCalendarEvent(
   return normalizeEvent(data)
 }
 
+function addWeeksToDateInput(value: string | undefined, weeks: number) {
+  if (!value) return value
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  date.setDate(date.getDate() + weeks * 7)
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return date.toISOString().slice(0, 10)
+  }
+
+  const pad = (number: number) => String(number).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+export async function createCalendarEvents(
+  userId: string,
+  event: CalendarEventInput
+): Promise<CalendarEvent[]> {
+  const repeatWeeks = event.repeatWeekly
+    ? Math.min(Math.max(Math.floor(Number(event.repeatWeeks) || 12), 1), 52)
+    : 1
+
+  if (repeatWeeks === 1) {
+    return [await createCalendarEvent(userId, event)]
+  }
+
+  const rows = Array.from({ length: repeatWeeks }, (_, index) => ({
+    userId,
+    title: event.title,
+    description: event.description,
+    location: event.location,
+    startDateTime: event.allDay ? null : addWeeksToDateInput(event.startDateTime, index),
+    endDateTime: event.allDay ? null : addWeeksToDateInput(event.endDateTime, index),
+    startDate: event.allDay ? addWeeksToDateInput(event.startDate, index) : null,
+    endDate: event.allDay ? addWeeksToDateInput(event.endDate, index) : null,
+    allDay: event.allDay || false,
+    color: event.color,
+  }))
+
+  const { data, error } = await supabaseAdmin
+    .from('CalendarEvent')
+    .insert(rows)
+    .select()
+
+  if (error) throw error
+  return (data || []).map(normalizeEvent)
+}
+
 export async function updateCalendarEvent(
   userId: string,
   eventId: string,

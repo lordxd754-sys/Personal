@@ -45,9 +45,12 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
   const [location, setLocation] = useState(initial?.location ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [color, setColor] = useState(initial?.color ?? '')
+  const [repeatWeekly, setRepeatWeekly] = useState(initial?.repeatWeekly ?? false)
+  const [repeatWeeks, setRepeatWeeks] = useState(initial?.repeatWeeks ?? 12)
   const [saving, setSaving] = useState(false)
   const [studentQuery, setStudentQuery] = useState('')
   const [showStudents, setShowStudents] = useState(false)
+  const canRepeat = !initial?.id
 
   const filteredStudents = students.filter(s => s.name.toLowerCase().includes(studentQuery.toLowerCase())).slice(0, 5)
 
@@ -72,6 +75,8 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
         location: location || undefined,
         description: description || undefined,
         color: color || undefined,
+        repeatWeekly: canRepeat ? repeatWeekly : false,
+        repeatWeeks: canRepeat ? repeatWeeks : undefined,
       })
       onClose()
     } finally {
@@ -126,6 +131,47 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
               />
             </div>
           </div>
+
+          {/* Fixed weekly event */}
+          {canRepeat && (
+            <div className="bg-surface-container border border-surface-border rounded-lg p-3 space-y-3">
+              <button
+                type="button"
+                onClick={() => setRepeatWeekly(v => !v)}
+                className="w-full flex items-center justify-between gap-3 text-left"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-text-muted text-lg">event_repeat</span>
+                  <span>
+                    <span className="block text-label-md text-on-surface">Compromisso fixo semanal</span>
+                    <span className="block text-label-sm text-text-muted normal-case">
+                      Repete no mesmo dia e horário
+                    </span>
+                  </span>
+                </span>
+                <span className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${repeatWeekly ? 'bg-secondary' : 'bg-surface-container-high'}`}>
+                  <span className={`absolute top-1 w-4 h-4 rounded-full transition-all ${repeatWeekly ? 'left-6 bg-on-secondary' : 'left-1 bg-text-muted'}`} />
+                </span>
+              </button>
+
+              {repeatWeekly && (
+                <label className="flex items-center gap-3 pl-7">
+                  <span className="text-label-caps text-text-muted">Repetir por</span>
+                  <select
+                    value={repeatWeeks}
+                    onChange={e => setRepeatWeeks(Number(e.target.value))}
+                    className="bg-surface-container-lowest border border-surface-border rounded-lg px-3 py-2 text-body-sm text-on-surface outline-none focus:border-primary"
+                  >
+                    <option value={4}>4 semanas</option>
+                    <option value={8}>8 semanas</option>
+                    <option value={12}>12 semanas</option>
+                    <option value={24}>24 semanas</option>
+                    <option value={52}>52 semanas</option>
+                  </select>
+                </label>
+              )}
+            </div>
+          )}
 
           {/* Student autocomplete */}
           <div className="relative">
@@ -196,7 +242,7 @@ function EventModal({ onClose, onSave, initial, students }: EventModalProps) {
         <div className="flex gap-3 px-6 py-4 border-t border-surface-border">
           <Button variant="secondary" className="flex-1" onClick={onClose}>Cancelar</Button>
           <Button className="flex-1" onClick={handleSave} loading={saving} disabled={!title.trim()}>
-            Salvar evento
+            {repeatWeekly && canRepeat ? `Criar ${repeatWeeks} eventos` : 'Salvar evento'}
           </Button>
         </div>
       </div>
@@ -801,6 +847,10 @@ export default function AgendaPage() {
               <span className="material-symbols-outlined text-lg">add</span>
               Novo evento
             </Button>
+            <Button variant="secondary" onClick={() => openNewEvent({ repeatWeekly: true })} className="w-full gap-2 text-label-caps mt-2">
+              <span className="material-symbols-outlined text-lg">event_repeat</span>
+              Compromisso fixo
+            </Button>
           </div>
           <MiniCalendar
             date={date}
@@ -879,6 +929,10 @@ export default function AgendaPage() {
             <Button onClick={() => openNewEvent()} className="gap-1 text-label-caps hidden md:flex">
               <span className="material-symbols-outlined text-lg">add</span>
               Novo evento
+            </Button>
+            <Button variant="secondary" onClick={() => openNewEvent({ repeatWeekly: true })} className="gap-1 text-label-caps hidden lg:flex">
+              <span className="material-symbols-outlined text-lg">event_repeat</span>
+              Fixo
             </Button>
           </header>
 
